@@ -16,6 +16,9 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'phone',
+        'profile_photo',
+        'is_active',
     ];
 
     protected $hidden = [
@@ -26,9 +29,13 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_active' => 'boolean',
     ];
 
-    // JWT Methods
+    // ==========================================
+    // JWT METHODS
+    // ==========================================
+    
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -39,7 +46,10 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    // Relaciones
+    // ==========================================
+    // RELACIONES
+    // ==========================================
+    
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'user_role');
@@ -70,10 +80,32 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Recommendation::class);
     }
 
-    // Métodos helpers
-    public function hasRole($roleName)
+    // ==========================================
+    // MÉTODOS DE ROLES Y PERMISOS
+    // ==========================================
+    
+    public function hasRole($role)
     {
-        return $this->roles()->where('name', $roleName)->exists();
+        if (is_string($role)) {
+            return $this->roles->contains('slug', $role) || $this->roles->contains('name', $role);
+        }
+        return !! $role->intersect($this->roles)->count();
+    }
+
+    public function hasAnyRole($roles)
+    {
+        if (is_array($roles)) {
+            foreach ($roles as $role) {
+                if ($this->hasRole($role)) {
+                    return true;
+                }
+            }
+        } else {
+            if ($this->hasRole($roles)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function hasPermission($permissionName)
@@ -81,5 +113,44 @@ class User extends Authenticatable implements JWTSubject
         return $this->roles()->whereHas('permissions', function ($query) use ($permissionName) {
             $query->where('name', $permissionName);
         })->exists();
+    }
+
+    public function isJefa()
+    {
+        return $this->hasRole('jefa') || $this->hasRole('Jefa');
+    }
+
+    public function isAdmin()
+    {
+        return $this->hasRole('administrador') || $this->hasRole('Administrador');
+    }
+
+    public function isEmpleado()
+    {
+        return $this->hasRole('empleado') || $this->hasRole('Empleado');
+    }
+
+    public function isCliente()
+    {
+        return $this->hasRole('cliente') || $this->hasRole('Cliente');
+    }
+
+    // ✅ ELIMINADO: método can() que causaba conflicto
+    // Usa hasPermission() directamente
+
+    public function getRoleNames()
+    {
+        return $this->roles->pluck('name')->toArray();
+    }
+
+    public function getMainRole()
+    {
+        return $this->roles->first();
+    }
+
+    public function getMainRoleName()
+    {
+        $role = $this->roles->first();
+        return $role ? $role->name : 'Sin rol';
     }
 }

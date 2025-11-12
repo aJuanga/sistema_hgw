@@ -9,13 +9,17 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            // Primero roles y permisos (RoleSeeder crea ambos)
             RoleSeeder::class,
-            PermissionSeeder::class,
+            
+            // Luego datos base
             CategorySeeder::class,
             PaymentMethodSeeder::class,
             DiseaseSeeder::class,
             AllergySeeder::class,
             HealthPropertySeeder::class,
+            
+            // Por último usuarios (necesita roles creados)
             UserSeeder::class,
         ]);
     }

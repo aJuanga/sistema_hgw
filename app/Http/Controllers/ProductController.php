@@ -10,13 +10,36 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+        $status = $request->input('status');
+
         $products = Product::with('category')
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                            $categoryQuery->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($status === 'available', function ($query) {
+                $query->where('is_available', true);
+            })
+            ->when($status === 'unavailable', function ($query) {
+                $query->where('is_available', false);
+            })
             ->latest()
-            ->paginate(10);
+            ->paginate(9)
+            ->withQueryString();
         
-        return view('products.index', compact('products'));
+        return view('products.index', [
+            'products' => $products,
+            'search' => $search,
+            'status' => $status,
+        ]);
     }
 
     public function create()

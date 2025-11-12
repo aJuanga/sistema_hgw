@@ -22,10 +22,17 @@
         </div>
     @endif
 
+    @php
+        $user = Auth::user();
+        $canManageCatalog = $user?->hasAnyRole(['jefa', 'administrador']);
+        $canManageOperations = $user?->hasAnyRole(['jefa', 'administrador', 'empleado']);
+        $isCliente = $user?->isCliente();
+    @endphp
+
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <!-- Categories Card -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow p-6 {{ !$canManageCatalog ? 'opacity-60' : '' }}">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Categorías</p>
@@ -61,7 +68,7 @@
         </div>
 
         <!-- Diseases Card -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow p-6 {{ !$canManageCatalog ? 'opacity-60' : '' }}">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Enfermedades</p>
@@ -79,7 +86,7 @@
         </div>
 
         <!-- Health Properties Card -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow p-6 {{ !$canManageCatalog ? 'opacity-60' : '' }}">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Propiedades Saludables</p>
@@ -102,40 +109,69 @@
         <!-- Quick Actions -->
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
-            <div class="space-y-3">
-                <a href="{{ route('categories.create') }}" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
-                    <div class="p-2 bg-blue-100 rounded-lg mr-3">
-                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                    </div>
-                    <span class="text-gray-700 font-medium">Nueva Categoría</span>
-                </a>
-                <a href="{{ route('products.create') }}" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
-                    <div class="p-2 bg-green-100 rounded-lg mr-3">
-                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                    </div>
-                    <span class="text-gray-700 font-medium">Nuevo Producto</span>
-                </a>
-                <a href="{{ route('diseases.create') }}" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
-                    <div class="p-2 bg-red-100 rounded-lg mr-3">
-                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                    </div>
-                    <span class="text-gray-700 font-medium">Nueva Enfermedad</span>
-                </a>
-                <a href="{{ route('health-properties.create') }}" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
-                    <div class="p-2 bg-purple-100 rounded-lg mr-3">
-                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                    </div>
-                    <span class="text-gray-700 font-medium">Nueva Propiedad Saludable</span>
-                </a>
-            </div>
+
+            @if($canManageCatalog || $canManageOperations)
+                <div class="space-y-3">
+                    @if($canManageCatalog)
+                        <a href="{{ route('categories.create') }}" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                            <div class="p-2 bg-blue-100 rounded-lg mr-3">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700 font-medium">Nueva Categoría</span>
+                        </a>
+                        <a href="{{ route('products.create') }}" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                            <div class="p-2 bg-green-100 rounded-lg mr-3">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700 font-medium">Nuevo Producto</span>
+                        </a>
+                        <a href="{{ route('diseases.create') }}" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                            <div class="p-2 bg-red-100 rounded-lg mr-3">
+                                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700 font-medium">Nueva Enfermedad</span>
+                        </a>
+                        <a href="{{ route('health-properties.create') }}" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                            <div class="p-2 bg-purple-100 rounded-lg mr-3">
+                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700 font-medium">Nueva Propiedad Saludable</span>
+                        </a>
+                    @endif
+
+                    @if($canManageOperations)
+                        <a href="{{ route('orders.create') }}" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                            <div class="p-2 bg-yellow-100 rounded-lg mr-3">
+                                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v8m4-4H8m12-5V7a2 2 0 00-2-2h-1.172a2 2 0 01-1.414-.586l-1.828-1.828A2 2 0 0013.172 2h-2.344a2 2 0 00-1.414.586L7.586 4.414A2 2 0 016.172 5H5a2 2 0 00-2 2v1"/>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700 font-medium">Nuevo Pedido</span>
+                        </a>
+                        <a href="{{ route('inventory.create') }}" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                            <div class="p-2 bg-indigo-100 rounded-lg mr-3">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V7a2 2 0 00-2-2h-3V3a1 1 0 00-1-1h-4a1 1 0 00-1 1v2H6a2 2 0 00-2 2v6m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4"/>
+                                </svg>
+                            </div>
+                            <span class="text-gray-700 font-medium">Registrar Movimiento</span>
+                        </a>
+                    @endif
+                </div>
+            @else
+                <div class="bg-gray-50 border border-dashed border-gray-200 rounded-lg p-4 text-center text-gray-500">
+                    <p>No tienes acciones administrativas disponibles.</p>
+                    <p class="text-sm mt-2">Puedes ver los productos en el menú lateral y realizar pedidos desde la tienda.</p>
+                </div>
+            @endif
         </div>
 
         <!-- Recent Products -->
@@ -159,18 +195,22 @@
                                 <p class="text-xs text-gray-500">Bs. {{ number_format($product->price, 2) }}</p>
                             </div>
                         </div>
-                        <a href="{{ route('products.edit', $product) }}" class="text-blue-600 hover:text-blue-800">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
-                        </a>
+                        @if($canManageCatalog)
+                            <a href="{{ route('products.edit', $product) }}" class="text-blue-600 hover:text-blue-800">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </a>
+                        @endif
                     </div>
                 @empty
                     <div class="text-center py-8 text-gray-500">
                         <p>No hay productos registrados</p>
-                        <a href="{{ route('products.create') }}" class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">
-                            Crear el primero →
-                        </a>
+                        @if($canManageCatalog)
+                            <a href="{{ route('products.create') }}" class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">
+                                Crear el primero →
+                            </a>
+                        @endif
                     </div>
                 @endforelse
             </div>

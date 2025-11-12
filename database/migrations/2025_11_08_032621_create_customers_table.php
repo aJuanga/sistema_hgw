@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
+            $table->enum('customer_type', ['regular', 'vip'])->default('regular'); // ✅ AGREGAR ESTA LÍNEA
             $table->string('phone', 20)->nullable();
             $table->text('address')->nullable();
             $table->date('birthdate')->nullable();

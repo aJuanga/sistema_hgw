@@ -10,10 +10,11 @@ return new class extends Migration
     {
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100)->unique(); // crear_producto, editar_usuario, etc.
-            $table->string('module', 50); // productos, usuarios, pedidos, etc.
+            $table->string('name', 100)->unique();
+            $table->string('module', 50);
             $table->string('description')->nullable();
             $table->timestamps();
+            $table->softDeletes(); // ✅ AGREGAR ESTA LÍNEA
         });
     }
 

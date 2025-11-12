@@ -28,6 +28,13 @@
 
                     <!-- Navigation -->
                     <nav class="flex-1 overflow-y-auto py-4">
+                        @php
+                            $user = Auth::user();
+                            $canManageCatalog = $user?->hasAnyRole(['jefa', 'administrador']);
+                            $canManageOperations = $user?->hasAnyRole(['jefa', 'administrador', 'empleado']);
+                            $catalogLabel = $canManageCatalog ? 'Gestión de Productos' : 'Catálogo';
+                        @endphp
+
                         <a href="{{ route('dashboard') }}"
                            class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('dashboard') ? 'bg-gray-700 text-white' : '' }}">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,44 +44,78 @@
                         </a>
 
                         <div class="px-6 py-2 text-xs font-semibold text-gray-400 uppercase">
-                            Gestión de Productos
+                            {{ $catalogLabel }}
                         </div>
 
-                        <a href="{{ route('categories.index') }}"
-                           class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('categories.*') ? 'bg-gray-700 text-white' : '' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                            </svg>
-                            Categorías
-                        </a>
+                        @if($canManageCatalog)
+                            <a href="{{ route('products.index') }}"
+                               class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('products.*') ? 'bg-gray-700 text-white' : '' }}">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                                Productos
+                            </a>
+                        @else
+                            <a href="{{ route('client.dashboard') }}"
+                               class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('client.dashboard') ? 'bg-gray-700 text-white' : '' }}">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                                Catálogo
+                            </a>
+                        @endif
 
-                        <a href="{{ route('products.index') }}"
-                           class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('products.*') ? 'bg-gray-700 text-white' : '' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                            </svg>
-                            Productos
-                        </a>
+                        @if($canManageCatalog)
+                            <a href="{{ route('categories.index') }}"
+                               class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('categories.*') ? 'bg-gray-700 text-white' : '' }}">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                </svg>
+                                Categorías
+                            </a>
 
-                        <div class="px-6 py-2 text-xs font-semibold text-gray-400 uppercase mt-4">
-                            Salud
-                        </div>
+                            <div class="px-6 py-2 text-xs font-semibold text-gray-400 uppercase mt-4">
+                                Salud
+                            </div>
 
-                        <a href="{{ route('diseases.index') }}"
-                           class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('diseases.*') ? 'bg-gray-700 text-white' : '' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                            Enfermedades
-                        </a>
+                            <a href="{{ route('diseases.index') }}"
+                               class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('diseases.*') ? 'bg-gray-700 text-white' : '' }}">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Enfermedades
+                            </a>
 
-                        <a href="{{ route('health-properties.index') }}"
-                           class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('health-properties.*') ? 'bg-gray-700 text-white' : '' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                            Propiedades Saludables
-                        </a>
+                            <a href="{{ route('health-properties.index') }}"
+                               class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('health-properties.*') ? 'bg-gray-700 text-white' : '' }}">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                                Propiedades Saludables
+                            </a>
+                        @endif
+
+                        @if($canManageOperations)
+                            <div class="px-6 py-2 text-xs font-semibold text-gray-400 uppercase mt-4">
+                                Operaciones
+                            </div>
+
+                            <a href="{{ route('inventory.index') }}"
+                               class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('inventory.*') ? 'bg-gray-700 text-white' : '' }}">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9-4 9 4-9 4-9-4zm0 6l9-4 9 4-9 4-9-4zm9 4l9 4-9 4-9-4 9-4z"/>
+                                </svg>
+                                Inventario
+                            </a>
+
+                            <a href="{{ route('orders.index') }}"
+                               class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('orders.*') ? 'bg-gray-700 text-white' : '' }}">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                                </svg>
+                                Pedidos
+                            </a>
+                        @endif
                     </nav>
 
                     <!-- User Menu -->
