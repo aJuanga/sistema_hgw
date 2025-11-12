@@ -3,7 +3,7 @@
 return [
 
     'defaults' => [
-        'guard' => 'api', // 👈 IMPORTANTE: debe ser 'api' si usas JWT
+        'guard' => 'web', // Guard por defecto para autenticación web
         'passwords' => 'users',
     ],
 
