@@ -90,7 +90,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        // Proteger: La Jefa no puede eliminarse a sí misma
+        // Proteger: No se puede eliminar a sí mismo
         if ($user->id === auth()->id()) {
             return redirect()->route('users.index')
                 ->with('error', 'No puedes eliminarte a ti mismo');
