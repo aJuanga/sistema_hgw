@@ -1,0 +1,81 @@
+===========================================
+COMANDOS PARA EJECUTAR - Sistema HGW
+===========================================
+
+1. INICIAR POSTGRESQL (si no está corriendo):
+   service postgresql start
+
+2. LIMPIAR TODAS LAS CACHÉS:
+   php artisan optimize:clear
+
+3. INICIAR EL SERVIDOR DE DESARROLLO:
+   php artisan serve --host=127.0.0.1 --port=8001
+
+===========================================
+DATOS DE ACCESO
+===========================================
+
+CLIENTES (Todos con contraseña: password):
+- pedro@gmail.com
+- laura@gmail.com
+- roberto@gmail.com
+- sofia@gmail.com
+
+ADMINISTRADORES:
+- jefa@healthyglow.com (contraseña: password)
+- admin@healthyglow.com (contraseña: password)
+
+===========================================
+CÓMO PROBAR
+===========================================
+
+1. Abre el navegador en: http://127.0.0.1:8001
+
+2. Inicia sesión con un cliente, por ejemplo:
+   Email: pedro@gmail.com
+   Contraseña: password
+
+3. Automáticamente te redirige a: http://127.0.0.1:8001/client/dashboard
+
+4. Verás el catálogo con 3 productos
+
+5. Haz clic en el botón "Ver" de cualquier producto
+
+6. Te mostrará la página completa con:
+   - Descripción completa del producto
+   - INGREDIENTES (lista completa)
+   - Propiedades saludables
+   - Contraindicaciones
+   - Botón para agregar al carrito
+   - Productos relacionados
+
+===========================================
+URLs DIRECTAS PARA PROBAR:
+===========================================
+
+Catálogo:
+http://127.0.0.1:8001/client/dashboard
+
+Ver producto 1:
+http://127.0.0.1:8001/client/products/1
+
+Ver producto 2:
+http://127.0.0.1:8001/client/products/2
+
+Ver producto 3:
+http://127.0.0.1:8001/client/products/3
+
+===========================================
+SI AÚN DA 404:
+===========================================
+
+Ejecuta estos comandos adicionales:
+
+php artisan route:clear
+php artisan config:clear
+php artisan view:clear
+
+Luego reinicia el servidor:
+php artisan serve --host=127.0.0.1 --port=8001
+
+===========================================
