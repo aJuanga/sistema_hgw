@@ -109,8 +109,12 @@ Route::middleware(['auth', 'role:jefa'])->group(function () {
     // CRUD Resources - Inventario (solo jefa)
     Route::resource('inventory', InventoryController::class);
 
-    // CRUD Resources - Roles y Usuarios (solo jefa)
+    // CRUD Resources - Roles (solo jefa)
     Route::resource('roles', RoleController::class);
+});
+
+// Rutas de Usuarios (jefa y administrador)
+Route::middleware(['auth', 'role:jefa,administrador'])->group(function () {
     Route::resource('users', UserController::class);
 });
 
