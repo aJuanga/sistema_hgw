@@ -79,10 +79,15 @@
                                 <td class="px-6 py-4 text-sm font-medium space-x-2">
                                     <a href="{{ route('users.edit', $user) }}" class="text-gray-700 hover:text-gray-900">Editar</a>
 
-                                    @if($user->hasRole('jefa') || $user->hasRole('Jefa') || $user->hasRole('administrador') || $user->hasRole('Administrador') || $user->hasRole('empleado') || $user->hasRole('Empleado'))
+                                    @php
+                                        $userRoleSlug = $user->roles->first()->slug ?? '';
+                                        $isProtected = in_array($userRoleSlug, ['jefa', 'administrador', 'empleado']);
+                                    @endphp
+
+                                    @if($isProtected)
                                         <span class="text-gray-400 text-xs">(Protegido)</span>
                                     @else
-                                        <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline" onsubmit="return confirm('Estas seguro?')">
+                                        <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline" onsubmit="return confirm('Estas seguro de eliminar este cliente?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-gray-700 hover:text-gray-900">Eliminar</button>
