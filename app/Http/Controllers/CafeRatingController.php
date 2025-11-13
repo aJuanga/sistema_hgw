@@ -116,4 +116,35 @@ class CafeRatingController extends Controller
             'rating' => $rating
         ]);
     }
+
+    /**
+     * Mostrar página de todas las reseñas
+     */
+    public function index()
+    {
+        $ratings = CafeRating::with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        $averageRating = round(CafeRating::getAverageRating(), 1);
+        $totalRatings = CafeRating::getTotalRatings();
+
+        // Distribución de calificaciones
+        $distribution = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $count = CafeRating::where('rating', $i)->count();
+            $distribution[$i] = [
+                'count' => $count,
+                'percentage' => $totalRatings > 0 ? round(($count / $totalRatings) * 100, 1) : 0
+            ];
+        }
+
+        $stats = [
+            'average' => $averageRating,
+            'total' => $totalRatings,
+            'distribution' => $distribution
+        ];
+
+        return view('client.reviews', compact('ratings', 'stats'));
+    }
 }

@@ -90,6 +90,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/client/orders/{order}', [ClientOrderController::class, 'showOrder'])->name('client.orders.show');
 
     // Rutas de Calificaciones de la Cafetería
+    Route::get('/client/reviews', [CafeRatingController::class, 'index'])->name('client.reviews');
     Route::post('/client/cafe-rating', [CafeRatingController::class, 'store'])->name('client.cafe-rating.store');
     Route::get('/client/cafe-rating/check', [CafeRatingController::class, 'checkUserRating'])->name('client.cafe-rating.check');
     Route::get('/client/cafe-rating/stats', [CafeRatingController::class, 'stats'])->name('client.cafe-rating.stats');

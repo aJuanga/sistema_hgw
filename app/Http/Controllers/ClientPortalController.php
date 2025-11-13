@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Order;
 use App\Models\LoyaltyPoint;
 use App\Models\Category;
+use App\Models\CafeRating;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -52,13 +53,20 @@ class ClientPortalController extends Controller
             ->limit(3)
             ->get();
 
+        // Estadísticas de calificaciones de la cafetería
+        $cafeRatingStats = [
+            'average' => round(CafeRating::getAverageRating(), 1),
+            'total' => CafeRating::getTotalRatings(),
+        ];
+
         return view('client.dashboard', compact(
             'products',
             'search',
             'stats',
             'featuredProducts',
             'categories',
-            'recentOrders'
+            'recentOrders',
+            'cafeRatingStats'
         ));
     }
 

@@ -240,6 +240,70 @@
                     <p class="text-xs uppercase tracking-wider text-slate-400">Pendientes</p>
                 </div>
             </div>
+
+            <!-- Café Rating Widget -->
+            <div class="mt-8 animate-fade-in delay-100">
+                <div class="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-amber-600/10 backdrop-blur-xl p-8 text-center">
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+                        <div>
+                            <p class="text-sm uppercase tracking-wider text-amber-400 font-semibold mb-2">Calificación de la Cafetería</p>
+                            <div class="flex items-center justify-center space-x-2 mb-3">
+                                @php
+                                    $avgRating = $cafeRatingStats['average'];
+                                    $fullStars = floor($avgRating);
+                                    $hasHalfStar = ($avgRating - $fullStars) >= 0.5;
+                                @endphp
+                                @for ($i = 1; $i <= 5; $i++)
+                                    @if ($i <= $fullStars)
+                                        <svg class="h-8 w-8 text-amber-400 fill-current" viewBox="0 0 24 24">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        </svg>
+                                    @elseif ($i == $fullStars + 1 && $hasHalfStar)
+                                        <svg class="h-8 w-8 text-amber-400" viewBox="0 0 24 24">
+                                            <defs>
+                                                <linearGradient id="half-fill">
+                                                    <stop offset="50%" stop-color="currentColor"/>
+                                                    <stop offset="50%" stop-color="transparent"/>
+                                                </linearGradient>
+                                            </defs>
+                                            <path fill="url(#half-fill)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                            <path fill="none" stroke="currentColor" stroke-width="1.5" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        </svg>
+                                    @else
+                                        <svg class="h-8 w-8 text-slate-600 fill-current" viewBox="0 0 24 24">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        </svg>
+                                    @endif
+                                @endfor
+                            </div>
+                            <p class="text-4xl font-bold text-white mb-1">{{ $cafeRatingStats['average'] ?: '0.0' }} <span class="text-lg text-slate-400">/ 5</span></p>
+                            <p class="text-sm text-slate-400">
+                                Basado en {{ $cafeRatingStats['total'] }} {{ $cafeRatingStats['total'] == 1 ? 'calificación' : 'calificaciones' }}
+                            </p>
+                            @if($cafeRatingStats['total'] > 0)
+                                <a href="{{ route('client.reviews') }}" class="inline-block mt-2 text-xs text-amber-400 hover:text-amber-300 transition">
+                                    Ver todas las reseñas →
+                                </a>
+                            @endif
+                        </div>
+
+                        <div class="h-px md:h-24 w-24 md:w-px bg-amber-500/30"></div>
+
+                        <div class="text-center md:text-left">
+                            <p class="text-slate-300 mb-4 max-w-xs">
+                                ¿Ya probaste nuestros productos? Comparte tu experiencia y ayúdanos a mejorar.
+                            </p>
+                            <button @click="showRatingModal = true"
+                                    class="inline-flex items-center space-x-2 rounded-xl border-2 border-amber-500/50 bg-amber-500/20 px-6 py-3 text-sm font-bold text-amber-300 backdrop-blur transition hover:bg-amber-500/30 hover:border-amber-400 hover:scale-105">
+                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                                <span>Dejar mi Calificación</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -453,7 +517,7 @@
     <!-- Footer -->
     <footer class="border-t border-slate-800/50 bg-slate-950">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
                 <div>
                     <div class="flex items-center space-x-3 mb-4">
                         <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold">
@@ -481,6 +545,49 @@
                     <a href="mailto:soporte@healthyglow.com" class="text-sm text-emerald-400 hover:text-emerald-300 transition">
                         ✉️ soporte@healthyglow.com
                     </a>
+                </div>
+
+                <!-- Rating Widget -->
+                <div>
+                    <h3 class="text-sm font-semibold text-white mb-3">Calificación</h3>
+                    <div class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+                        <div class="flex items-center space-x-1 mb-2">
+                            @php
+                                $avgRating = $cafeRatingStats['average'];
+                                $fullStars = floor($avgRating);
+                                $hasHalfStar = ($avgRating - $fullStars) >= 0.5;
+                            @endphp
+                            @for ($i = 1; $i <= 5; $i++)
+                                @if ($i <= $fullStars)
+                                    <svg class="h-4 w-4 text-amber-400 fill-current" viewBox="0 0 24 24">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
+                                @elseif ($i == $fullStars + 1 && $hasHalfStar)
+                                    <svg class="h-4 w-4 text-amber-400" viewBox="0 0 24 24">
+                                        <defs>
+                                            <linearGradient id="footer-half">
+                                                <stop offset="50%" stop-color="currentColor"/>
+                                                <stop offset="50%" stop-color="transparent"/>
+                                            </linearGradient>
+                                        </defs>
+                                        <path fill="url(#footer-half)" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        <path fill="none" stroke="currentColor" stroke-width="1.5" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
+                                @else
+                                    <svg class="h-4 w-4 text-slate-600 fill-current" viewBox="0 0 24 24">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
+                                @endif
+                            @endfor
+                        </div>
+                        <p class="text-xl font-bold text-white mb-1">{{ $cafeRatingStats['average'] ?: '0.0' }}<span class="text-sm text-slate-400">/5</span></p>
+                        <p class="text-xs text-slate-400 mb-3">{{ $cafeRatingStats['total'] }} {{ $cafeRatingStats['total'] == 1 ? 'reseña' : 'reseñas' }}</p>
+                        @if($cafeRatingStats['total'] > 0)
+                            <a href="{{ route('client.reviews') }}" class="inline-block text-xs text-amber-400 hover:text-amber-300 transition font-medium">
+                                Ver todas →
+                            </a>
+                        @endif
+                    </div>
                 </div>
             </div>
 
