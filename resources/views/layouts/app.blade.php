@@ -99,6 +99,7 @@
                             $isJefa = $user?->hasRole('jefa');
                             $isAdmin = $user?->hasRole('administrador');
                             $isEmpleado = $user?->hasRole('empleado');
+                            $isCliente = $user?->hasRole('cliente');
                             $canManageCatalog = $isJefa || $isAdmin || $isEmpleado;
                             $canManageOperations = $isJefa || $isAdmin || $isEmpleado;
                         @endphp
@@ -113,6 +114,43 @@
                             </div>
                             <span class="ml-3 font-semibold">Dashboard</span>
                         </a>
+
+                        @if($isCliente)
+                            <!-- Catálogo para Cliente -->
+                            <div class="mt-6 mb-3 px-4">
+                                <p class="text-xs font-black text-slate-500 uppercase tracking-wider">Tienda</p>
+                            </div>
+
+                            <a href="{{ route('client.dashboard') }}"
+                               class="flex items-center px-4 py-3 mb-1 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition-all group {{ request()->routeIs('client.dashboard') ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg' : '' }}">
+                                <div class="w-10 h-10 rounded-lg {{ request()->routeIs('client.dashboard') ? 'bg-white/20' : 'bg-slate-700/50 group-hover:bg-slate-700' }} flex items-center justify-center transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                    </svg>
+                                </div>
+                                <span class="ml-3 font-semibold">Catálogo de Productos</span>
+                            </a>
+
+                            <a href="{{ route('client.cart') }}"
+                               class="flex items-center px-4 py-3 mb-1 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition-all group {{ request()->routeIs('client.cart') ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg' : '' }}">
+                                <div class="w-10 h-10 rounded-lg {{ request()->routeIs('client.cart') ? 'bg-white/20' : 'bg-slate-700/50 group-hover:bg-slate-700' }} flex items-center justify-center transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                </div>
+                                <span class="ml-3 font-semibold">Mi Carrito</span>
+                            </a>
+
+                            <a href="{{ route('client.orders') }}"
+                               class="flex items-center px-4 py-3 mb-1 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition-all group {{ request()->routeIs('client.orders') ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg' : '' }}">
+                                <div class="w-10 h-10 rounded-lg {{ request()->routeIs('client.orders') ? 'bg-white/20' : 'bg-slate-700/50 group-hover:bg-slate-700' }} flex items-center justify-center transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                    </svg>
+                                </div>
+                                <span class="ml-3 font-semibold">Mis Pedidos</span>
+                            </a>
+                        @endif
 
                         @if($canManageCatalog)
                             <div class="mt-6 mb-3 px-4">
@@ -296,7 +334,67 @@
                         </button>
                     </div>
                     <nav class="flex-1 overflow-y-auto py-6 px-4 custom-scrollbar">
-                        <!-- Copy navigation from desktop -->
+                        @php
+                            $user = Auth::user();
+                            $isJefa = $user?->hasRole('jefa');
+                            $isAdmin = $user?->hasRole('administrador');
+                            $isEmpleado = $user?->hasRole('empleado');
+                            $isCliente = $user?->hasRole('cliente');
+                            $canManageCatalog = $isJefa || $isAdmin || $isEmpleado;
+                            $canManageOperations = $isJefa || $isAdmin || $isEmpleado;
+                        @endphp
+
+                        <!-- Dashboard -->
+                        <a href="{{ route('dashboard') }}"
+                           @click="sidebarOpen = false"
+                           class="flex items-center px-4 py-3 mb-1 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition-all group {{ request()->routeIs('dashboard') ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg' : '' }}">
+                            <div class="w-10 h-10 rounded-lg {{ request()->routeIs('dashboard') ? 'bg-white/20' : 'bg-slate-700/50 group-hover:bg-slate-700' }} flex items-center justify-center transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                </svg>
+                            </div>
+                            <span class="ml-3 font-semibold">Dashboard</span>
+                        </a>
+
+                        @if($isCliente)
+                            <!-- Catálogo para Cliente -->
+                            <div class="mt-6 mb-3 px-4">
+                                <p class="text-xs font-black text-slate-500 uppercase tracking-wider">Tienda</p>
+                            </div>
+
+                            <a href="{{ route('client.dashboard') }}"
+                               @click="sidebarOpen = false"
+                               class="flex items-center px-4 py-3 mb-1 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition-all group {{ request()->routeIs('client.dashboard') ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg' : '' }}">
+                                <div class="w-10 h-10 rounded-lg {{ request()->routeIs('client.dashboard') ? 'bg-white/20' : 'bg-slate-700/50 group-hover:bg-slate-700' }} flex items-center justify-center transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                    </svg>
+                                </div>
+                                <span class="ml-3 font-semibold">Catálogo de Productos</span>
+                            </a>
+
+                            <a href="{{ route('client.cart') }}"
+                               @click="sidebarOpen = false"
+                               class="flex items-center px-4 py-3 mb-1 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition-all group {{ request()->routeIs('client.cart') ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg' : '' }}">
+                                <div class="w-10 h-10 rounded-lg {{ request()->routeIs('client.cart') ? 'bg-white/20' : 'bg-slate-700/50 group-hover:bg-slate-700' }} flex items-center justify-center transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                </div>
+                                <span class="ml-3 font-semibold">Mi Carrito</span>
+                            </a>
+
+                            <a href="{{ route('client.orders') }}"
+                               @click="sidebarOpen = false"
+                               class="flex items-center px-4 py-3 mb-1 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition-all group {{ request()->routeIs('client.orders') ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg' : '' }}">
+                                <div class="w-10 h-10 rounded-lg {{ request()->routeIs('client.orders') ? 'bg-white/20' : 'bg-slate-700/50 group-hover:bg-slate-700' }} flex items-center justify-center transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                    </svg>
+                                </div>
+                                <span class="ml-3 font-semibold">Mis Pedidos</span>
+                            </a>
+                        @endif
                     </nav>
                 </aside>
 
