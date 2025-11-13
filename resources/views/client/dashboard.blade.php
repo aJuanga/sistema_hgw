@@ -180,8 +180,8 @@
             <div class="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50"></div>
             <img src="{{ asset('images/1.jpg') }}"
                  alt="Background"
-                 class="w-full h-full object-cover opacity-20">
-            <div class="absolute inset-0 bg-white/40 backdrop-blur-sm"></div>
+                 class="w-full h-full object-cover opacity-15">
+            <div class="absolute inset-0 bg-white/70"></div>
         </div>
 
         <!-- Contenido con posición relativa -->
