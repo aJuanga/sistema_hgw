@@ -137,14 +137,10 @@ class OrderController extends Controller
      */
     public function edit(Order $order)
     {
-        if ($order->status !== 'pendiente') {
-            return redirect()->route('orders.show', $order)
-                ->with('error', 'Solo se pueden editar pedidos con estado pendiente.');
-        }
+        // Cargar las relaciones necesarias
+        $order->load(['user', 'orderItems.product']);
 
-        $products = Product::with('inventory')->get();
-
-        return view('orders.edit', compact('order', 'products'));
+        return view('orders.edit', compact('order'));
     }
 
     /**
@@ -154,6 +150,7 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'status' => 'required|in:pendiente,en_preparacion,listo,entregado,cancelado',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         DB::beginTransaction();
@@ -163,6 +160,7 @@ class OrderController extends Controller
 
             $order->update([
                 'status' => $validated['status'],
+                'notes' => $validated['notes'] ?? $order->notes,
             ]);
 
             // Set completed_at if status changed to entregado

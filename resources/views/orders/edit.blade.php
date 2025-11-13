@@ -27,9 +27,9 @@
                     <div class="border-t pt-3">
                         <h4 class="text-sm font-medium text-gray-700 mb-2">Items:</h4>
                         <ul class="space-y-1">
-                            @foreach($order->items as $item)
+                            @foreach($order->orderItems as $item)
                                 <li class="text-sm text-gray-600">
-                                    {{ $item->product->name }} - {{ $item->quantity }} x Bs. {{ number_format($item->price, 2) }} = Bs. {{ number_format($item->subtotal, 2) }}
+                                    {{ $item->product->name }} - {{ $item->quantity }} x Bs. {{ number_format($item->unit_price, 2) }} = Bs. {{ number_format($item->subtotal, 2) }}
                                 </li>
                             @endforeach
                         </ul>
