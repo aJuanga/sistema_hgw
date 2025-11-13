@@ -83,6 +83,7 @@ Route::middleware('auth')->group(function () {
     // Rutas del Cliente (accesibles para todos los usuarios autenticados)
     Route::get('/client/dashboard', [ClientPortalController::class, 'index'])->name('client.dashboard');
     Route::get('/client/profile', [ClientPortalController::class, 'profile'])->name('client.profile');
+    Route::get('/client/products/{product}', [ClientPortalController::class, 'showProduct'])->name('client.products.show');
     Route::get('/client/cart', [ClientOrderController::class, 'cart'])->name('client.cart');
     Route::post('/client/cart/add', [ClientOrderController::class, 'addToCart'])->name('client.cart.add');
     Route::post('/client/cart/update', [ClientOrderController::class, 'updateCart'])->name('client.cart.update');

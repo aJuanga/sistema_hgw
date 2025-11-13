@@ -333,7 +333,7 @@
 
                             <!-- Actions - Fixed Height -->
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('products.show', $product) }}"
+                                <a href="{{ route('client.products.show', $product) }}"
                                    class="flex-1 inline-flex items-center justify-center space-x-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>

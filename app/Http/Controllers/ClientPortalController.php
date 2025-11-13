@@ -103,5 +103,23 @@ class ClientPortalController extends Controller
 
         return view('client.profile', compact('user', 'stats'));
     }
+
+    public function showProduct(Product $product)
+    {
+        $user = Auth::user();
+
+        // Cargar relaciones necesarias
+        $product->load(['category', 'healthProperties', 'contraindicatedDiseases']);
+
+        // Productos relacionados de la misma categoría
+        $relatedProducts = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->where('is_available', true)
+            ->inRandomOrder()
+            ->limit(4)
+            ->get();
+
+        return view('client.product-detail', compact('product', 'relatedProducts', 'user'));
+    }
 }
 
