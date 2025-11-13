@@ -11,6 +11,7 @@ use App\Http\Controllers\ClientPortalController;
 use App\Http\Controllers\ClientOrderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -111,6 +112,11 @@ Route::middleware(['auth', 'role:jefa'])->group(function () {
 
     // CRUD Resources - Roles (solo jefa)
     Route::resource('roles', RoleController::class);
+
+    // Reportes (solo jefa)
+    Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+    Route::get('/reports/products', [ReportController::class, 'products'])->name('reports.products');
+    Route::get('/reports/customers', [ReportController::class, 'customers'])->name('reports.customers');
 });
 
 // Rutas de Usuarios (jefa y administrador)
