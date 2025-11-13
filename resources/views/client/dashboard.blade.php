@@ -173,6 +173,14 @@
         </div>
     </header>
 
+    <!-- Banner Logo Centrado -->
+    <div id="centerLogo" class="fixed inset-0 z-[5] flex items-center justify-center pointer-events-none transition-opacity duration-700 ease-out">
+        <div class="text-center">
+            <h1 class="text-7xl md:text-9xl font-black text-amber-900/30 tracking-wider drop-shadow-2xl">HGW</h1>
+            <p class="text-xl md:text-2xl font-semibold text-amber-800/40 mt-2 tracking-wide">Healthy Glow Wellness</p>
+        </div>
+    </div>
+
     <!-- Main Content with Background Image -->
     <main class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <!-- Imagen de fondo semitransparente -->
@@ -481,6 +489,40 @@
                 closeCustomizationModal();
             }
         });
+
+        // Animación de scroll para ocultar logo central
+        const centerLogo = document.getElementById('centerLogo');
+        let lastScrollY = window.scrollY;
+
+        function handleLogoScroll() {
+            const scrollY = window.scrollY;
+
+            // Si hace scroll hacia abajo más de 100px, oculta el logo
+            if (scrollY > 100) {
+                centerLogo.style.opacity = '0';
+            } else {
+                // Si vuelve arriba, muestra el logo gradualmente
+                const opacity = 1 - (scrollY / 100);
+                centerLogo.style.opacity = opacity;
+            }
+
+            lastScrollY = scrollY;
+        }
+
+        // Escuchar el evento de scroll con throttling para mejor performance
+        let ticking = false;
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                window.requestAnimationFrame(function() {
+                    handleLogoScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // Ejecutar al cargar para setear estado inicial
+        handleLogoScroll();
     </script>
 </body>
 </html>
