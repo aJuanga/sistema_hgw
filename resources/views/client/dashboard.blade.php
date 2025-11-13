@@ -176,9 +176,8 @@
     <!-- Banner Image Section -->
     <section class="relative w-full overflow-hidden">
         <div class="relative h-64 md:h-80 lg:h-96">
-            <!-- Aquí va tu imagen - Coloca tu imagen en: /home/user/sistema_hgw/public/images/banner.jpg -->
-            <!-- Puedes usar cualquier nombre, solo cambia 'banner.jpg' por el nombre de tu archivo -->
-            <img src="{{ asset('images/banner.jpg') }}"
+            <!-- Imagen banner - Archivo: public/images/1.jpg -->
+            <img src="{{ asset('images/1.jpg') }}"
                  alt="Banner Healthy Glow Wellness"
                  class="w-full h-full object-cover">
 
