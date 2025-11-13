@@ -173,6 +173,32 @@
         </div>
     </header>
 
+    <!-- Banner Image Section -->
+    <section class="relative w-full overflow-hidden">
+        <div class="relative h-64 md:h-80 lg:h-96">
+            <!-- Aquí va tu imagen - Coloca tu imagen en: /home/user/sistema_hgw/public/images/banner.jpg -->
+            <!-- Puedes usar cualquier nombre, solo cambia 'banner.jpg' por el nombre de tu archivo -->
+            <img src="{{ asset('images/banner.jpg') }}"
+                 alt="Banner Healthy Glow Wellness"
+                 class="w-full h-full object-cover">
+
+            <!-- Opcional: Overlay para mejor legibilidad de texto superpuesto -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+
+            <!-- Opcional: Texto sobre la imagen -->
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-center px-4">
+                    <h2 class="text-3xl md:text-5xl font-black text-white drop-shadow-2xl mb-2">
+                        Bienvenido a Healthy Glow Wellness
+                    </h2>
+                    <p class="text-lg md:text-xl text-white drop-shadow-lg font-medium">
+                        Descubre el sabor de la vida saludable
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
