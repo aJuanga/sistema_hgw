@@ -38,7 +38,7 @@
             @endif
 
             <!-- Estadísticas Principales -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                 <!-- Total Productos -->
                 <div class="bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition duration-200">
                     <div class="flex items-center justify-between mb-4">
@@ -99,6 +99,28 @@
                     </div>
                     <a href="{{ route('orders.index') }}" class="text-white text-sm hover:underline flex items-center font-semibold">
                         Gestionar pedidos
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Usuarios -->
+                <div class="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-500 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition duration-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex-1">
+                            <p class="text-white text-sm font-bold mb-2 uppercase tracking-wide">USUARIOS</p>
+                            <p class="text-5xl font-bold text-white">{{ \App\Models\User::count() }}</p>
+                            <p class="text-blue-50 text-xs mt-2">registrados en el sistema</p>
+                        </div>
+                        <div class="bg-white bg-opacity-30 p-4 rounded-xl backdrop-blur-sm">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <a href="{{ route('users.index') }}" class="text-white text-sm hover:underline flex items-center font-semibold">
+                        Gestionar usuarios
                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
                         </svg>

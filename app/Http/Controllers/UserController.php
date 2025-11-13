@@ -2,63 +2,103 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $users = User::with('roles')
+            ->latest()
+            ->paginate(15);
+
+        return view('users.index', compact('users'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $roles = Role::where('is_active', true)->get();
+        return view('users.create', compact('roles'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'phone' => 'nullable|string|max:20',
+            'role_id' => 'required|exists:roles,id',
+            'is_active' => 'boolean',
+        ]);
+
+        $validated['password'] = Hash::make($validated['password']);
+        $validated['is_active'] = $request->has('is_active');
+
+        $user = User::create($validated);
+
+        // Asignar rol al usuario
+        $user->roles()->attach($validated['role_id']);
+
+        return redirect()->route('users.index')
+            ->with('success', 'Usuario creado exitosamente');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(User $user)
     {
-        //
+        $user->load('roles');
+        return view('users.show', compact('user'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(User $user)
     {
-        //
+        $roles = Role::where('is_active', true)->get();
+        $user->load('roles');
+        return view('users.edit', compact('user', 'roles'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, User $user)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+            'phone' => 'nullable|string|max:20',
+            'role_id' => 'required|exists:roles,id',
+            'is_active' => 'boolean',
+        ]);
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $validated['is_active'] = $request->has('is_active');
+
+        $user->update($validated);
+
+        // Actualizar rol del usuario
+        $user->roles()->sync([$validated['role_id']]);
+
+        return redirect()->route('users.index')
+            ->with('success', 'Usuario actualizado exitosamente');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        //
+        // Proteger usuarios con rol de Jefa (no se pueden eliminar)
+        if ($user->hasRole('jefa') || $user->hasRole('Jefa')) {
+            return redirect()->route('users.index')
+                ->with('error', 'No se puede eliminar al usuario con rol de Jefa');
+        }
+
+        $user->delete();
+
+        return redirect()->route('users.index')
+            ->with('success', 'Usuario eliminado exitosamente');
     }
 }
