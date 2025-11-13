@@ -30,7 +30,7 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-100">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Orden</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Imagen</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Nombre</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Slug</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Productos</th>
@@ -41,11 +41,18 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($categories as $category)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $category->order }}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($category->icon)
+                                            <img src="{{ asset('storage/'.$category->icon) }}" alt="{{ $category->name }}" class="h-12 w-12 object-cover rounded">
+                                        @else
+                                            <div class="h-12 w-12 bg-gray-200 rounded flex items-center justify-center">
+                                                <span class="text-gray-400 text-xs">Sin imagen</span>
+                                            </div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-medium text-gray-900">{{ $category->name }}</div>
+                                        <div class="text-xs text-gray-500">Orden: {{ $category->order }}</div>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700">
                                         {{ $category->slug }}

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -27,7 +28,7 @@ class CategoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
-            'icon' => 'nullable|string|max:255',
+            'icon' => 'nullable|image|max:2048',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
         ]);
@@ -36,10 +37,14 @@ class CategoryController extends Controller
         $validated['is_active'] = $request->has('is_active');
         $validated['order'] = $validated['order'] ?? 0;
 
+        if ($request->hasFile('icon')) {
+            $validated['icon'] = $request->file('icon')->store('categories', 'public');
+        }
+
         Category::create($validated);
 
         return redirect()->route('categories.index')
-            ->with('success', 'Categoría creada exitosamente');
+            ->with('success', 'Categoria creada exitosamente');
     }
 
     public function show(Category $category)
@@ -58,7 +63,7 @@ class CategoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
-            'icon' => 'nullable|string|max:255',
+            'icon' => 'nullable|image|max:2048',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
         ]);
@@ -66,22 +71,33 @@ class CategoryController extends Controller
         $validated['slug'] = Str::slug($validated['name']);
         $validated['is_active'] = $request->has('is_active');
 
+        if ($request->hasFile('icon')) {
+            if ($category->icon) {
+                Storage::disk('public')->delete($category->icon);
+            }
+            $validated['icon'] = $request->file('icon')->store('categories', 'public');
+        }
+
         $category->update($validated);
 
         return redirect()->route('categories.index')
-            ->with('success', 'Categoría actualizada exitosamente');
+            ->with('success', 'Categoria actualizada exitosamente');
     }
 
     public function destroy(Category $category)
     {
         if ($category->products()->count() > 0) {
             return redirect()->route('categories.index')
-                ->with('error', 'No se puede eliminar la categoría porque tiene productos asociados');
+                ->with('error', 'No se puede eliminar la categoria porque tiene productos asociados');
+        }
+
+        if ($category->icon) {
+            Storage::disk('public')->delete($category->icon);
         }
 
         $category->delete();
 
         return redirect()->route('categories.index')
-            ->with('success', 'Categoría eliminada exitosamente');
+            ->with('success', 'Categoria eliminada exitosamente');
     }
 }

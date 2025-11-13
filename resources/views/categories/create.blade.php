@@ -9,7 +9,7 @@
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
-                    <form action="{{ route('categories.store') }}" method="POST">
+                    <form action="{{ route('categories.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="mb-4">
@@ -27,6 +27,16 @@
                             <textarea name="description" id="description" rows="3"
                                 class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 @error('description') border-gray-500 @enderror">{{ old('description') }}</textarea>
                             @error('description')
+                                <p class="mt-1 text-sm text-gray-700">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="icon" class="block text-sm font-medium text-gray-900">Imagen</label>
+                            <input type="file" name="icon" id="icon" accept="image/*"
+                                class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded cursor-pointer bg-white focus:outline-none @error('icon') border-gray-500 @enderror">
+                            <p class="mt-1 text-xs text-gray-600">Formato: JPG, PNG, WEBP. Maximo 2MB.</p>
+                            @error('icon')
                                 <p class="mt-1 text-sm text-gray-700">{{ $message }}</p>
                             @enderror
                         </div>
