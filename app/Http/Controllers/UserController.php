@@ -90,23 +90,13 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        // Proteger usuarios con roles del sistema (no se pueden eliminar)
-        if ($user->hasRole('jefa') || $user->hasRole('Jefa')) {
+        // Proteger: La Jefa no puede eliminarse a sí misma
+        if ($user->id === auth()->id()) {
             return redirect()->route('users.index')
-                ->with('error', 'No se puede eliminar al usuario con rol de Jefa');
+                ->with('error', 'No puedes eliminarte a ti mismo');
         }
 
-        if ($user->hasRole('administrador') || $user->hasRole('Administrador')) {
-            return redirect()->route('users.index')
-                ->with('error', 'No se puede eliminar al usuario con rol de Administrador');
-        }
-
-        if ($user->hasRole('empleado') || $user->hasRole('Empleado')) {
-            return redirect()->route('users.index')
-                ->with('error', 'No se puede eliminar al usuario con rol de Empleado');
-        }
-
-        // Solo se pueden eliminar usuarios con rol Cliente
+        // La Jefa puede eliminar Admin, Empleado y Cliente
         $user->delete();
 
         return redirect()->route('users.index')
