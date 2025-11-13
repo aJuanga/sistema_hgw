@@ -4,7 +4,7 @@
     </x-slot>
 
     <div class="mb-6 flex justify-end">
-        <a href="{{ route('health-properties.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
+        <a href="{{ route('health-properties.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white text-sm font-medium rounded transition">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
@@ -14,13 +14,13 @@
 
     <div>
         @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <div class="bg-gray-100 border border-gray-400 text-gray-900 px-4 py-3 rounded mb-4">
                 {{ session('success') }}
             </div>
         @endif
 
         @if(session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <div class="bg-gray-100 border border-gray-400 text-gray-900 px-4 py-3 rounded mb-4">
                 {{ session('error') }}
             </div>
         @endif
@@ -28,25 +28,32 @@
         <div class="bg-white overflow-hidden shadow-sm rounded-lg">
                 <div class="p-6">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                        <thead class="bg-gray-100">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Slug</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Productos</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Imagen</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Nombre</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Slug</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Productos</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Estado</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($healthProperties as $healthProperty)
                                 <tr>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ $healthProperty->name }}</div>
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         @if($healthProperty->icon)
-                                            <span class="text-xs text-gray-500">{{ $healthProperty->icon }}</span>
+                                            <img src="{{ asset('storage/'.$healthProperty->icon) }}" alt="{{ $healthProperty->name }}" class="h-12 w-12 object-cover rounded">
+                                        @else
+                                            <div class="h-12 w-12 bg-gray-200 rounded flex items-center justify-center">
+                                                <span class="text-gray-400 text-xs">Sin imagen</span>
+                                            </div>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ $healthProperty->name }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-700">
                                         {{ $healthProperty->slug }}
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-900">
@@ -54,27 +61,27 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         @if($healthProperty->is_active)
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded bg-gray-200 text-gray-900">
                                                 Activa
                                             </span>
                                         @else
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded bg-gray-300 text-gray-700">
                                                 Inactiva
                                             </span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-sm font-medium space-x-2">
-                                        <a href="{{ route('health-properties.edit', $healthProperty) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
-                                        <form action="{{ route('health-properties.destroy', $healthProperty) }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro?')">
+                                        <a href="{{ route('health-properties.edit', $healthProperty) }}" class="text-gray-700 hover:text-gray-900">Editar</a>
+                                        <form action="{{ route('health-properties.destroy', $healthProperty) }}" method="POST" class="inline" onsubmit="return confirm('Estas seguro?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900">Eliminar</button>
+                                            <button type="submit" class="text-gray-700 hover:text-gray-900">Eliminar</button>
                                         </form>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                                         No hay propiedades saludables registradas
                                     </td>
                                 </tr>

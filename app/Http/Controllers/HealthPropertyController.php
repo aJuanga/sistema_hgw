@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\HealthProperty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class HealthPropertyController extends Controller
 {
@@ -27,12 +28,16 @@ class HealthPropertyController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
-            'icon' => 'nullable|string|max:255',
+            'icon' => 'nullable|image|max:2048',
             'is_active' => 'boolean',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
         $validated['is_active'] = $request->has('is_active');
+
+        if ($request->hasFile('icon')) {
+            $validated['icon'] = $request->file('icon')->store('health-properties', 'public');
+        }
 
         HealthProperty::create($validated);
 
@@ -56,12 +61,19 @@ class HealthPropertyController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
-            'icon' => 'nullable|string|max:255',
+            'icon' => 'nullable|image|max:2048',
             'is_active' => 'boolean',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
         $validated['is_active'] = $request->has('is_active');
+
+        if ($request->hasFile('icon')) {
+            if ($healthProperty->icon) {
+                Storage::disk('public')->delete($healthProperty->icon);
+            }
+            $validated['icon'] = $request->file('icon')->store('health-properties', 'public');
+        }
 
         $healthProperty->update($validated);
 
@@ -71,6 +83,10 @@ class HealthPropertyController extends Controller
 
     public function destroy(HealthProperty $healthProperty)
     {
+        if ($healthProperty->icon) {
+            Storage::disk('public')->delete($healthProperty->icon);
+        }
+
         $healthProperty->delete();
 
         return redirect()->route('health-properties.index')
