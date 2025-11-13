@@ -65,12 +65,16 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-sm font-medium space-x-2">
-                                    <a href="{{ route('roles.edit', $role) }}" class="text-gray-700 hover:text-gray-900">Editar</a>
-                                    <form action="{{ route('roles.destroy', $role) }}" method="POST" class="inline" onsubmit="return confirm('Estas seguro?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-gray-700 hover:text-gray-900">Eliminar</button>
-                                    </form>
+                                    @if(strtolower($role->slug) === 'jefa')
+                                        <span class="text-gray-400 italic">Rol protegido</span>
+                                    @else
+                                        <a href="{{ route('roles.edit', $role) }}" class="text-gray-700 hover:text-gray-900">Editar</a>
+                                        <form action="{{ route('roles.destroy', $role) }}" method="POST" class="inline" onsubmit="return confirm('Estas seguro?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-gray-700 hover:text-gray-900">Eliminar</button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

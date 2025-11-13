@@ -47,11 +47,23 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
+        // Proteger el rol jefa de ser editado
+        if (strtolower($role->slug) === 'jefa') {
+            return redirect()->route('roles.index')
+                ->with('error', 'No se puede editar el rol de Jefa porque es un rol protegido del sistema');
+        }
+
         return view('roles.edit', compact('role'));
     }
 
     public function update(Request $request, Role $role)
     {
+        // Proteger el rol jefa de ser actualizado
+        if (strtolower($role->slug) === 'jefa') {
+            return redirect()->route('roles.index')
+                ->with('error', 'No se puede editar el rol de Jefa porque es un rol protegido del sistema');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:50|unique:roles,name,' . $role->id,
             'description' => 'nullable|string|max:255',
