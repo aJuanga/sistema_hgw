@@ -142,6 +142,9 @@ class OrderController extends Controller
                 ->with('error', 'Solo se pueden editar pedidos con estado pendiente.');
         }
 
+        // Cargar relaciones necesarias
+        $order->load(['user', 'orderItems.product']);
+
         $products = Product::with('inventory')->get();
 
         return view('orders.edit', compact('order', 'products'));
