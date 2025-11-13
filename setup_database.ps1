@@ -31,3 +31,5 @@ Write-Host "Verificando tablas..." -ForegroundColor Yellow
 
 Write-Host "`n¡Base de datos lista!" -ForegroundColor Green
 
+
+

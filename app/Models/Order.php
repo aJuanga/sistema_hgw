@@ -14,6 +14,7 @@ class Order extends Model
         'order_number',
         'user_id',
         'payment_method_id',
+        'delivery_type',
         'status',
         'subtotal',
         'tax',

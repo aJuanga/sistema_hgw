@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\ClientPortalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
@@ -8,6 +7,8 @@ use App\Http\Controllers\DiseaseController;
 use App\Http\Controllers\HealthPropertyController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ClientPortalController;
+use App\Http\Controllers\ClientOrderController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,33 +22,51 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    if (auth()->user()?->isCliente()) {
-        return redirect()->route('client.dashboard');
-    }
-
     try {
-        // Intentar obtener los datos del dashboard
+        // Estadísticas principales
         $categoriesCount = \App\Models\Category::count();
         $productsCount = \App\Models\Product::count();
         $diseasesCount = \App\Models\Disease::count();
         $healthPropertiesCount = \App\Models\HealthProperty::count();
-        $recentProducts = \App\Models\Product::latest()->take(5)->get();
+        
+        // Pedidos
+        $ordersCount = \App\Models\Order::count();
+        $pendingOrders = \App\Models\Order::with('user')
+            ->whereIn('status', ['pendiente', 'en_preparacion'])
+            ->latest()
+            ->take(5)
+            ->get();
+        
+        // Inventario bajo
+        $lowStockCount = 0;// \App\Models\Inventory::whereRaw('current_stock <= minimum_stock')->count();
+        
+        // Productos recientes
+        $recentProducts = \App\Models\Product::with('category')
+            ->latest()
+            ->take(5)
+            ->get();
         
         return view('dashboard', compact(
             'categoriesCount',
             'productsCount',
             'diseasesCount',
             'healthPropertiesCount',
+            'ordersCount',
+            'pendingOrders',
+            'lowStockCount',
             'recentProducts'
         ));
     } catch (\Exception $e) {
         // Si hay error de conexión a la base de datos
         return view('dashboard', [
-            'error' => 'Error de conexión a la base de datos. Por favor, verifica que la base de datos esté creada y las migraciones ejecutadas.',
+            'error' => 'Error: ' . $e->getMessage(),  // ← LÍNEA CORREGIDA
             'categoriesCount' => 0,
             'productsCount' => 0,
             'diseasesCount' => 0,
             'healthPropertiesCount' => 0,
+            'ordersCount' => 0,
+            'pendingOrders' => collect([]),
+            'lowStockCount' => 0,
             'recentProducts' => collect([])
         ]);
     }
@@ -58,37 +77,30 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::middleware('role:cliente')->group(function () {
-        Route::get('/mi-catalogo', [ClientPortalController::class, 'index'])->name('client.dashboard');
-    });
+    // Rutas del Cliente (accesibles para todos los usuarios autenticados)
+    Route::get('/client/dashboard', [ClientPortalController::class, 'index'])->name('client.dashboard');
+    Route::get('/client/cart', [ClientOrderController::class, 'cart'])->name('client.cart');
+    Route::post('/client/cart/add', [ClientOrderController::class, 'addToCart'])->name('client.cart.add');
+    Route::post('/client/cart/update', [ClientOrderController::class, 'updateCart'])->name('client.cart.update');
+    Route::delete('/client/cart/remove/{productId}', [ClientOrderController::class, 'removeFromCart'])->name('client.cart.remove');
+    Route::get('/client/checkout', [ClientOrderController::class, 'checkout'])->name('client.checkout');
+    Route::post('/client/checkout', [ClientOrderController::class, 'processCheckout'])->name('client.checkout.process');
+    Route::get('/client/orders', [ClientOrderController::class, 'myOrders'])->name('client.orders');
+    Route::get('/client/orders/{order}', [ClientOrderController::class, 'showOrder'])->name('client.orders.show');
+    Route::post('/client/ratings', [ClientOrderController::class, 'storeRating'])->name('client.ratings.store');
+});
 
-    // Catálogo visible para todos los usuarios autenticados
-    Route::middleware('role:jefa,administrador,empleado,cliente')->group(function () {
-        Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-    });
+// Rutas de Administración (solo para jefa, administrador y empleado)
+Route::middleware(['auth', 'role:jefa,administrador,empleado'])->group(function () {
+    // CRUD Resources - Productos
+    Route::resource('categories', CategoryController::class);
+    Route::resource('products', ProductController::class);
+    Route::resource('diseases', DiseaseController::class);
+    Route::resource('health-properties', HealthPropertyController::class);
 
-    // Gestión de catálogo (solo Jefa y Administrador)
-    Route::middleware('role:jefa,administrador')->group(function () {
-        Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-        Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-        Route::match(['put', 'patch'], '/products/{product}', [ProductController::class, 'update'])->name('products.update');
-        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
-
-        Route::resource('categories', CategoryController::class);
-        Route::resource('diseases', DiseaseController::class);
-        Route::resource('health-properties', HealthPropertyController::class);
-    });
-
-    Route::middleware('role:jefa,administrador,empleado,cliente')->group(function () {
-        Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
-    });
-
-    // Operaciones (Jefa, Administrador y Empleado)
-    Route::middleware('role:jefa,administrador,empleado')->group(function () {
-        Route::resource('inventory', InventoryController::class);
-        Route::resource('orders', OrderController::class);
-    });
+    // CRUD Resources - Inventario y Pedidos
+    Route::resource('inventory', InventoryController::class);
+    Route::resource('orders', OrderController::class);
 });
 
 require __DIR__.'/auth.php';

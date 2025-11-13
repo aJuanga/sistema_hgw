@@ -78,3 +78,5 @@ DB_PASSWORD=14107802
 
 **IMPORTANTE:** El puerto es 5433, no el estándar 5432. Asegúrate de conectarte al puerto correcto en pgAdmin.
 
+
+

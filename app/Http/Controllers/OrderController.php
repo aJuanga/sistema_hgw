@@ -120,7 +120,14 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        $order->load(['user', 'orderItems.product', 'statusHistory']);
+        $order->load(['user', 'orderItems.product']);
+        
+        // Cargar historial solo si existe la tabla
+        try {
+            $order->load('statusHistory');
+        } catch (\Exception $e) {
+            // Si la tabla no existe, simplemente no cargar el historial
+        }
 
         return view('orders.show', compact('order'));
     }

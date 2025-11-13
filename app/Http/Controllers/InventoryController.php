@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inventory;
-use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
 {
@@ -14,12 +12,14 @@ class InventoryController extends Controller
      */
     public function index()
     {
-        $inventories = Inventory::with('product')
-            ->orderByRaw('CASE WHEN current_stock <= minimum_stock THEN 0 ELSE 1 END')
-            ->orderBy('current_stock', 'asc')
-            ->paginate(15);
+        $inventories = Inventory::with('product.category')->get();
+        
+        // Productos con stock bajo (menor o igual al mínimo)
+        $lowStock = $inventories->filter(function ($inventory) {
+            return $inventory->current_stock <= $inventory->minimum_stock;
+        });
 
-        return view('inventory.index', compact('inventories'));
+        return view('inventory.index', compact('inventories', 'lowStock'));
     }
 
     /**
@@ -27,9 +27,7 @@ class InventoryController extends Controller
      */
     public function create()
     {
-        $products = Product::whereDoesntHave('inventory')->get();
-
-        return view('inventory.create', compact('products'));
+        //
     }
 
     /**
@@ -37,19 +35,7 @@ class InventoryController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'product_id' => 'required|exists:products,id|unique:inventory',
-            'current_stock' => 'required|integer|min:0',
-            'minimum_stock' => 'required|integer|min:0',
-            'maximum_stock' => 'nullable|integer|min:0',
-            'unit' => 'required|string|max:50',
-            'last_restock_date' => 'nullable|date',
-        ]);
-
-        Inventory::create($validated);
-
-        return redirect()->route('inventory.index')
-            ->with('success', 'Inventario creado exitosamente.');
+        //
     }
 
     /**
@@ -57,9 +43,7 @@ class InventoryController extends Controller
      */
     public function show(Inventory $inventory)
     {
-        $inventory->load('product');
-
-        return view('inventory.show', compact('inventory'));
+        //
     }
 
     /**
@@ -67,6 +51,7 @@ class InventoryController extends Controller
      */
     public function edit(Inventory $inventory)
     {
+        $inventory->load('product.category');
         return view('inventory.edit', compact('inventory'));
     }
 
@@ -76,18 +61,17 @@ class InventoryController extends Controller
     public function update(Request $request, Inventory $inventory)
     {
         $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'current_stock' => 'required|integer|min:0',
-            'minimum_stock' => 'required|integer|min:0',
-            'maximum_stock' => 'nullable|integer|min:0',
-            'unit' => 'required|string|max:50',
+            'current_stock' => 'required|numeric|min:0',
+            'minimum_stock' => 'required|numeric|min:0',
+            'maximum_stock' => 'required|numeric|min:0',
+            'unit' => 'nullable|string|max:20',
             'last_restock_date' => 'nullable|date',
         ]);
 
         $inventory->update($validated);
 
         return redirect()->route('inventory.index')
-            ->with('success', 'Inventario actualizado exitosamente.');
+            ->with('success', '✅ Inventario actualizado correctamente');
     }
 
     /**
@@ -95,9 +79,6 @@ class InventoryController extends Controller
      */
     public function destroy(Inventory $inventory)
     {
-        $inventory->delete();
-
-        return redirect()->route('inventory.index')
-            ->with('success', 'Inventario eliminado exitosamente.');
+        //
     }
 }

@@ -9,37 +9,32 @@ class Inventory extends Model
 {
     use HasFactory;
 
+    protected $table = 'inventory';  // ← AGREGAR ESTA LÍNEA
+
     protected $fillable = [
         'product_id',
         'current_stock',
         'minimum_stock',
-        'maximum_stock',
-        'unit',
+        'unit_of_measure',
+        'cost_per_unit',
         'last_restock_date',
     ];
 
     protected $casts = [
-        'current_stock' => 'integer',
-        'minimum_stock' => 'integer',
-        'maximum_stock' => 'integer',
-        'last_restock_date' => 'date',
+        'current_stock' => 'decimal:2',
+        'minimum_stock' => 'decimal:2',
+        'cost_per_unit' => 'decimal:2',
+        'last_restock_date' => 'datetime',
     ];
 
-    // Relación: Un inventario pertenece a un producto
+    // Relaciones
     public function product()
     {
         return $this->belongsTo(Product::class);
     }
 
-    // Método helper: Verificar si el stock está bajo
-    public function isLowStock()
+    public function inventoryMovements()
     {
-        return $this->current_stock <= $this->minimum_stock;
-    }
-
-    // Método helper: Verificar si está agotado
-    public function isOutOfStock()
-    {
-        return $this->current_stock <= 0;
+        return $this->hasMany(InventoryMovement::class);
     }
 }

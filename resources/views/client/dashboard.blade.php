@@ -25,52 +25,109 @@
                     <h1 class="mt-1 text-3xl font-semibold text-white">Hola, {{ $user->name }}</h1>
                     <p class="text-sm text-slate-200/80 mt-1">Descubre bebidas plant-based, cafés artesanales y snacks funcionales, recién diseñados para equilibrar tu energía.</p>
                 </div>
-                <form method="POST" action="{{ route('logout') }}" class="flex">
-                    @csrf
-                    <button
-                        type="submit"
-                        class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/20"
-                    >
-                        Cerrar sesión
-                    </button>
-                </form>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('client.cart') }}" class="relative inline-flex items-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/20">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        Carrito
+                        @php
+                            $cartCount = count(session()->get('cart', []));
+                        @endphp
+                        @if($cartCount > 0)
+                            <span class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white">{{ $cartCount }}</span>
+                        @endif
+                    </a>
+                    <a href="{{ route('client.orders') }}" class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/20">
+                        Mis Pedidos
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}" class="flex">
+                        @csrf
+                        <button
+                            type="submit"
+                            class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/20"
+                        >
+                            Cerrar sesión
+                        </button>
+                    </form>
+                </div>
             </nav>
 
             <div class="max-w-7xl mx-auto px-6 lg:px-10 pb-14">
-                <div class="grid gap-8 lg:grid-cols-[1.6fr,1fr]">
-                    <div class="rounded-[32px] border border-white/10 bg-white/10 p-8 backdrop-blur shadow-2xl shadow-emerald-500/10">
-                        <p class="text-xs uppercase tracking-[0.6em] text-emerald-200">Colección signature</p>
-                        <h2 class="mt-4 text-4xl font-semibold text-white leading-tight">
-                            Bebidas sensoriales con café orgánico, leches vegetales y superfoods
-                        </h2>
-                        <p class="mt-4 text-sm text-slate-200/85 leading-relaxed">
-                            Aromas a cacao tostado, notas de cardamomo y texturas cremosas listas para reconfortarte.
-                            Filtra por categoría o ingrediente y crea tu pedido consciente.
+                <div class="grid gap-8 lg:grid-cols-3">
+                    <!-- Información Principal de HGW -->
+                    <div class="lg:col-span-2 rounded-[32px] border border-white/10 bg-white/10 p-8 backdrop-blur shadow-2xl shadow-emerald-500/10">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="h-16 w-16 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold text-2xl">
+                                HGW
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase tracking-[0.6em] text-emerald-200">Bienvenido a</p>
+                                <h2 class="text-2xl font-bold text-white">Healthy Glow Wellness</h2>
+                            </div>
+                        </div>
+                        <h3 class="text-3xl font-semibold text-white leading-tight mb-4">
+                            Tu cafetería wellness en el corazón de la ciudad
+                        </h3>
+                        <p class="text-sm text-slate-200/85 leading-relaxed mb-6">
+                            En HGW creemos que cada taza cuenta. Ofrecemos bebidas plant-based, cafés de especialidad 
+                            y snacks funcionales cuidadosamente seleccionados para nutrir tu cuerpo y alma. 
+                            Cada producto está diseñado pensando en tu bienestar integral.
                         </p>
-                        <div class="mt-6 flex flex-wrap gap-3">
-                            <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-medium tracking-wide text-white">
-                                <span class="h-2 w-2 rounded-full bg-emerald-300"></span> Detox & Glow
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="rounded-xl bg-white/10 p-4 border border-white/20">
+                                <p class="text-xs text-slate-300 mb-1">Horario de Atención</p>
+                                <p class="text-white font-semibold">Lun - Sáb: 8:00 - 20:00</p>
+                                <p class="text-slate-400 text-xs mt-1">Domingo: Cerrado</p>
+                            </div>
+                            <div class="rounded-xl bg-white/10 p-4 border border-white/20">
+                                <p class="text-xs text-slate-300 mb-1">Ubicación</p>
+                                <p class="text-white font-semibold">Centro de la Ciudad</p>
+                                <p class="text-slate-400 text-xs mt-1">Ambiente acogedor</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-500/30 px-4 py-2 text-xs font-medium text-emerald-200">
+                                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                Ingredientes Orgánicos
                             </span>
-                            <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-medium tracking-wide text-white">
-                                <span class="h-2 w-2 rounded-full bg-amber-300"></span> Café de especialidad
+                            <span class="inline-flex items-center gap-2 rounded-full bg-amber-500/20 border border-amber-500/30 px-4 py-2 text-xs font-medium text-amber-200">
+                                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                Preparación Artesanal
                             </span>
-                            <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-medium tracking-wide text-white">
-                                <span class="h-2 w-2 rounded-full bg-rose-300"></span> Snacks plant-based
+                            <span class="inline-flex items-center gap-2 rounded-full bg-rose-500/20 border border-rose-500/30 px-4 py-2 text-xs font-medium text-rose-200">
+                                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                Opciones Saludables
                             </span>
                         </div>
                     </div>
-                    <div class="rounded-[32px] border border-white/10 bg-white/10 p-6 backdrop-blur shadow-xl shadow-amber-500/10 flex flex-col justify-between">
-                        <div>
-                            <p class="text-xs uppercase tracking-[0.4em] text-amber-200">Tip de la barista</p>
-                            <h3 class="mt-3 text-2xl font-semibold text-white">Activa tus sentidos</h3>
-                            <p class="mt-3 text-sm text-slate-200/80 leading-relaxed">
-                                Combina nuestros cold brews con toppings de nueces activadas y flores comestibles para dar textura y aroma.
+                    
+                    <!-- Botón de Catálogo -->
+                    <div class="rounded-[32px] border border-white/10 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 p-8 backdrop-blur shadow-xl shadow-emerald-500/20 flex flex-col justify-center items-center text-center">
+                        <div class="mb-6">
+                            <div class="h-20 w-20 mx-auto rounded-full bg-emerald-500/30 flex items-center justify-center mb-4">
+                                <svg class="h-10 w-10 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white mb-2">Explora Nuestro Menú</h3>
+                            <p class="text-sm text-slate-200/80 mb-6">
+                                Descubre nuestras bebidas, cafés y snacks saludables. Personaliza tu pedido según tus preferencias.
                             </p>
                         </div>
-                        <div class="mt-6 rounded-3xl bg-white/10 p-4 text-xs text-slate-200/70">
-                            <p class="uppercase tracking-[0.3em] text-emerald-200">horario</p>
-                            <p class="mt-1 font-medium text-white">Lunes a sábado · 08:00 - 20:00</p>
-                        </div>
+                        <a href="#catalogo" 
+                           class="w-full rounded-xl bg-emerald-500 px-6 py-4 text-center font-bold text-white shadow-lg shadow-emerald-500/40 transition hover:bg-emerald-600 hover:shadow-emerald-500/60 transform hover:scale-105">
+                            Ver Catálogo Completo
+                        </a>
+                        <p class="text-xs text-slate-300 mt-4">
+                            Más de 50 productos disponibles
+                        </p>
                     </div>
                 </div>
             </div>
@@ -79,7 +136,7 @@
 
     <main class="relative -mt-16 pb-20">
         <div class="max-w-7xl mx-auto px-6 lg:px-10">
-            <section class="rounded-[30px] border border-slate-800 bg-slate-900/80 px-6 py-8 shadow-2xl shadow-emerald-500/5 backdrop-blur">
+            <section id="catalogo" class="rounded-[30px] border border-slate-800 bg-slate-900/80 px-6 py-8 shadow-2xl shadow-emerald-500/5 backdrop-blur">
                 <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <h2 class="text-xl font-semibold text-white">Explora el menú consciente</h2>
@@ -157,16 +214,39 @@
                                         @endif
                                     </div>
 
-                                    <div class="pt-2">
+                                    <div class="pt-2 flex items-center justify-between gap-3">
                                         <a
                                             href="{{ route('products.show', $product) }}"
                                             class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-300 transition hover:text-emerald-200"
                                         >
-                                            Ver detalles sensoriales
+                                            Ver detalles
                                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                                             </svg>
                                         </a>
+                                        @if($product->is_available)
+                                            @if($product->customization_options && count($product->customization_options) > 0)
+                                                <button
+                                                    type="button"
+                                                    onclick="showCustomizationModal({{ $product->id }})"
+                                                    class="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600"
+                                                >
+                                                    Personalizar y Agregar
+                                                </button>
+                                            @else
+                                                <form action="{{ route('client.cart.add') }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                                    <input type="hidden" name="quantity" value="1">
+                                                    <button
+                                                        type="submit"
+                                                        class="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600"
+                                                    >
+                                                        Agregar al carrito
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endif
                                     </div>
                                 </div>
                             </article>
@@ -196,6 +276,87 @@
             </div>
         </div>
     </footer>
+
+    <!-- Modal de Personalización -->
+    <div id="customizationModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold text-white mb-4" id="modalProductName">Personalizar Producto</h3>
+            <form id="customizationForm" method="POST" action="{{ route('client.cart.add') }}">
+                @csrf
+                <input type="hidden" name="product_id" id="modalProductId">
+                <input type="hidden" name="quantity" value="1">
+                <div id="customizationOptions" class="space-y-4 mb-6">
+                    <!-- Las opciones se cargarán dinámicamente -->
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeCustomizationModal()" 
+                            class="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white font-semibold transition hover:bg-slate-700">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 rounded-xl bg-emerald-500 px-4 py-3 text-white font-semibold shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-600">
+                        Agregar al Carrito
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const products = @json($products->map(function($p) {
+            return [
+                'id' => $p->id,
+                'name' => $p->name,
+                'customization_options' => $p->customization_options
+            ];
+        }));
+
+        function showCustomizationModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            document.getElementById('modalProductId').value = productId;
+            document.getElementById('modalProductName').textContent = 'Personalizar ' + product.name;
+            
+            const optionsContainer = document.getElementById('customizationOptions');
+            optionsContainer.innerHTML = '';
+
+            if (product.customization_options && product.customization_options.length > 0) {
+                product.customization_options.forEach((option, index) => {
+                    const div = document.createElement('div');
+                    const label = option.label || option.name || 'Opción';
+                    div.innerHTML = `
+                        <label class="block text-sm font-medium text-slate-300 mb-2">${label}</label>
+                        <select name="customizations[customization_${productId}_${index}]" 
+                                class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none focus:ring focus:ring-emerald-500/20"
+                                required>
+                            ${option.options.map(opt => {
+                                const value = opt.value || opt;
+                                const label = opt.label || opt;
+                                return `<option value="${value}">${label}</option>`;
+                            }).join('')}
+                        </select>
+                    `;
+                    optionsContainer.appendChild(div);
+                });
+            }
+
+            document.getElementById('customizationModal').classList.remove('hidden');
+            document.getElementById('customizationModal').classList.add('flex');
+        }
+
+        function closeCustomizationModal() {
+            document.getElementById('customizationModal').classList.add('hidden');
+            document.getElementById('customizationModal').classList.remove('flex');
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('customizationModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCustomizationModal();
+            }
+        });
+    </script>
 </body>
 </html>
 

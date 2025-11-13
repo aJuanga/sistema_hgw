@@ -119,3 +119,5 @@ El puerto **5433** es diferente al estándar (5432). Asegúrate de:
 
 **¡Todo listo!** Solo falta crear la base de datos en pgAdmin y ejecutar las migraciones. El dashboard ya no debería crashear y te mostrará un mensaje de ayuda si la BD no está disponible.
 
+
+

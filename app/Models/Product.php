@@ -10,6 +10,8 @@ class Product extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'products';  // ← LÍNEA NUEVA AGREGADA
+
     protected $fillable = [
         'category_id',
         'name',
@@ -21,6 +23,7 @@ class Product extends Model
         'is_available',
         'is_featured',
         'preparation_time',
+        'customization_options',
     ];
 
     protected $casts = [
@@ -28,6 +31,7 @@ class Product extends Model
         'is_available' => 'boolean',
         'is_featured' => 'boolean',
         'preparation_time' => 'integer',
+        'customization_options' => 'array',
     ];
 
     // Relación: Un producto pertenece a una categoría
@@ -67,6 +71,12 @@ class Product extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    // Relación: Un producto tiene muchas valoraciones
+    public function ratings()
+    {
+        return $this->hasMany(ProductRating::class);
     }
 
     // Relación: Un producto tiene muchas recomendaciones

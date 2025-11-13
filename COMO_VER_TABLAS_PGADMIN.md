@@ -125,3 +125,5 @@ Si aún no ves las tablas después de seguir estos pasos:
 
 **¡No te preocupes!** Todo está funcionando correctamente. Solo necesitas navegar correctamente en pgAdmin. 😊
 
+
+
