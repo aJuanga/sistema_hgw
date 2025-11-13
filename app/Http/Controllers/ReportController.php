@@ -44,10 +44,10 @@ class ReportController extends Controller
             ->get();
 
         // Ingresos por método de pago
-        $revenueByPayment = Order::selectRaw('payment_method, COUNT(*) as count, SUM(total) as total')
+        $revenueByPayment = Order::selectRaw('payment_method_id, COUNT(*) as count, SUM(total) as total')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
-            ->groupBy('payment_method')
+            ->groupBy('payment_method_id')
             ->get();
 
         return view('reports.sales', compact(

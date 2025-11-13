@@ -154,7 +154,7 @@
                                 @foreach($revenueByPayment as $payment)
                                     <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                                         <div>
-                                            <p class="font-semibold text-slate-900">{{ ucfirst($payment->payment_method ?? 'No especificado') }}</p>
+                                            <p class="font-semibold text-slate-900">Método #{{ $payment->payment_method_id ?? 'No especificado' }}</p>
                                             <p class="text-sm text-slate-600">{{ $payment->count }} transacciones</p>
                                         </div>
                                         <span class="text-lg font-bold text-green-700">Bs. {{ number_format($payment->total, 2) }}</span>
