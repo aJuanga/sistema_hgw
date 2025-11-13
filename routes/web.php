@@ -9,6 +9,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ClientPortalController;
 use App\Http\Controllers\ClientOrderController;
+use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -101,6 +102,9 @@ Route::middleware(['auth', 'role:jefa,administrador,empleado'])->group(function 
     // CRUD Resources - Inventario y Pedidos
     Route::resource('inventory', InventoryController::class);
     Route::resource('orders', OrderController::class);
+
+    // CRUD Resources - Roles (solo jefa)
+    Route::resource('roles', RoleController::class);
 });
 
 require __DIR__.'/auth.php';
