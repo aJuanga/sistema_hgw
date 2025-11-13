@@ -248,6 +248,15 @@
                             </div>
                             <span class="text-sm font-bold text-gray-700 text-center">Ver Inventario</span>
                         </a>
+
+                        <a href="{{ route('roles.index') }}" class="flex flex-col items-center p-5 bg-gradient-to-br from-gray-50 to-gray-200 rounded-lg hover:shadow-lg transition border border-gray-300">
+                            <div class="w-14 h-14 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center mb-3 shadow">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-bold text-gray-700 text-center">Gestionar Roles</span>
+                        </a>
                     </div>
                 </div>
             </div>
