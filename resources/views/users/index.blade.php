@@ -79,14 +79,14 @@
                                 <td class="px-6 py-4 text-sm font-medium space-x-2">
                                     <a href="{{ route('users.edit', $user) }}" class="text-gray-700 hover:text-gray-900">Editar</a>
 
-                                    @if(!$user->hasRole('jefa') && !$user->hasRole('Jefa'))
+                                    @if($user->hasRole('jefa') || $user->hasRole('Jefa') || $user->hasRole('administrador') || $user->hasRole('Administrador') || $user->hasRole('empleado') || $user->hasRole('Empleado'))
+                                        <span class="text-gray-400 text-xs">(Protegido)</span>
+                                    @else
                                         <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline" onsubmit="return confirm('Estas seguro?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-gray-700 hover:text-gray-900">Eliminar</button>
                                         </form>
-                                    @else
-                                        <span class="text-gray-400 text-xs">(Protegido)</span>
                                     @endif
                                 </td>
                             </tr>

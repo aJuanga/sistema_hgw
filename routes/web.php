@@ -100,9 +100,14 @@ Route::middleware(['auth', 'role:jefa,administrador,empleado'])->group(function 
     Route::resource('diseases', DiseaseController::class);
     Route::resource('health-properties', HealthPropertyController::class);
 
-    // CRUD Resources - Inventario y Pedidos
-    Route::resource('inventory', InventoryController::class);
+    // CRUD Resources - Pedidos
     Route::resource('orders', OrderController::class);
+});
+
+// Rutas exclusivas de la Jefa
+Route::middleware(['auth', 'role:jefa'])->group(function () {
+    // CRUD Resources - Inventario (solo jefa)
+    Route::resource('inventory', InventoryController::class);
 
     // CRUD Resources - Roles y Usuarios (solo jefa)
     Route::resource('roles', RoleController::class);
