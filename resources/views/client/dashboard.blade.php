@@ -23,18 +23,18 @@
 <body class="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
 
     <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200 shadow-sm">
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-900/95 to-orange-900/95 backdrop-blur-md border-b border-amber-800 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-amber-800" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
                         </svg>
                     </div>
                     <div>
-                        <p class="text-lg font-bold text-slate-900">Healthy Glow Wellness</p>
-                        <p class="text-xs text-slate-600">Hola, <span class="font-semibold text-amber-700">{{ $user->name }}</span></p>
+                        <p class="text-lg font-bold text-white">Healthy Glow Wellness</p>
+                        <p class="text-xs text-amber-100">Hola, <span class="font-semibold text-white">{{ $user->name }}</span></p>
                     </div>
                 </div>
 
@@ -173,33 +173,19 @@
         </div>
     </header>
 
-    <!-- Banner Image Section -->
-    <section class="relative w-full overflow-hidden">
-        <div class="relative h-64 md:h-80 lg:h-96">
-            <!-- Imagen banner - Archivo: public/images/1.jpg -->
+    <!-- Main Content with Background Image -->
+    <main class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <!-- Imagen de fondo semitransparente -->
+        <div class="fixed inset-0 z-0 pointer-events-none">
+            <div class="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50"></div>
             <img src="{{ asset('images/1.jpg') }}"
-                 alt="Banner Healthy Glow Wellness"
-                 class="w-full h-full object-cover">
-
-            <!-- Opcional: Overlay para mejor legibilidad de texto superpuesto -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-
-            <!-- Opcional: Texto sobre la imagen -->
-            <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center px-4">
-                    <h2 class="text-3xl md:text-5xl font-black text-white drop-shadow-2xl mb-2">
-                        Bienvenido a Healthy Glow Wellness
-                    </h2>
-                    <p class="text-lg md:text-xl text-white drop-shadow-lg font-medium">
-                        Descubre el sabor de la vida saludable
-                    </p>
-                </div>
-            </div>
+                 alt="Background"
+                 class="w-full h-full object-cover opacity-20">
+            <div class="absolute inset-0 bg-white/40 backdrop-blur-sm"></div>
         </div>
-    </section>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Contenido con posición relativa -->
+        <div class="relative z-10">
 
         <!-- Search and Filters -->
         <section class="mb-8">
@@ -387,10 +373,12 @@
                 </a>
             </div>
         @endif
+
+        </div><!-- Cierre del contenido relativo -->
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-200 bg-white mt-12">
+    <footer class="relative z-10 border-t border-slate-200 bg-white/90 backdrop-blur-sm mt-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="text-center text-sm text-slate-600">
                 <p>&copy; {{ now()->year }} Healthy Glow Wellness. Todos los derechos reservados.</p>
