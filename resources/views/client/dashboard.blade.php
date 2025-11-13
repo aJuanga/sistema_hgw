@@ -27,18 +27,33 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-amber-800" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
-                        </svg>
-                    </div>
+                    <!-- Foto de Perfil -->
+                    @if($user->profile_photo)
+                        <img src="{{ asset('storage/' . $user->profile_photo) }}"
+                             alt="{{ $user->name }}"
+                             class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-lg">
+                    @else
+                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
+                            <span class="text-amber-800 font-bold text-lg">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                        </div>
+                    @endif
+
                     <div>
                         <p class="text-lg font-bold text-white">Healthy Glow Wellness</p>
-                        <p class="text-xs text-amber-100">Hola, <span class="font-semibold text-white">{{ $user->name }}</span></p>
+                        <p class="text-xs text-amber-100">Hola, <span class="font-semibold text-white">{{ $user->name }} {{ $user->last_name }}</span></p>
                     </div>
                 </div>
 
                 <div class="flex items-center space-x-3">
+                    <!-- Botón Mi Perfil -->
+                    <a href="{{ route('client.profile') }}"
+                       class="inline-flex items-center space-x-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <span class="hidden sm:inline">Mi Perfil</span>
+                    </a>
+
                     <a href="{{ route('client.cart') }}"
                        class="relative inline-flex items-center space-x-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

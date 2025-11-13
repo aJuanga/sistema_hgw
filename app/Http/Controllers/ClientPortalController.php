@@ -95,5 +95,13 @@ class ClientPortalController extends Controller
             'completedOrders' => $completedOrders,
         ];
     }
+
+    public function profile()
+    {
+        $user = Auth::user();
+        $stats = $this->getUserStats($user);
+
+        return view('client.profile', compact('user', 'stats'));
+    }
 }
 
