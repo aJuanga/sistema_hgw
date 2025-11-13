@@ -9,6 +9,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ClientPortalController;
 use App\Http\Controllers\ClientOrderController;
+use App\Http\Controllers\CafeRatingController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -87,7 +88,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/client/checkout', [ClientOrderController::class, 'processCheckout'])->name('client.checkout.process');
     Route::get('/client/orders', [ClientOrderController::class, 'myOrders'])->name('client.orders');
     Route::get('/client/orders/{order}', [ClientOrderController::class, 'showOrder'])->name('client.orders.show');
-    Route::post('/client/ratings', [ClientOrderController::class, 'storeRating'])->name('client.ratings.store');
+
+    // Rutas de Calificaciones de la Cafetería
+    Route::post('/client/cafe-rating', [CafeRatingController::class, 'store'])->name('client.cafe-rating.store');
+    Route::get('/client/cafe-rating/check', [CafeRatingController::class, 'checkUserRating'])->name('client.cafe-rating.check');
+    Route::get('/client/cafe-rating/stats', [CafeRatingController::class, 'stats'])->name('client.cafe-rating.stats');
+    Route::get('/client/cafe-rating/recent', [CafeRatingController::class, 'recent'])->name('client.cafe-rating.recent');
 });
 
 // Rutas de Administración (solo para jefa, administrador y empleado)
