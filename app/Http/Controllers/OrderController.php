@@ -7,8 +7,10 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\EmployeePoint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
@@ -101,6 +103,25 @@ class OrderController extends Controller
                 if ($inventory) {
                     $inventory->decrement('current_stock', $item['quantity']);
                 }
+            }
+
+            // Asignar puntos al empleado si es empleado
+            $currentUser = Auth::user();
+            if ($currentUser && $currentUser->isEmpleado()) {
+                // Calcular puntos: 1 punto por cada 10 Bs de venta
+                $points = floor($subtotal / 10);
+                // Cada punto equivale a 0.50 Bs
+                $amount = $points * 0.50;
+
+                EmployeePoint::create([
+                    'user_id' => $currentUser->id,
+                    'order_id' => $order->id,
+                    'points' => $points,
+                    'amount' => $amount,
+                    'type' => 'earned',
+                    'date' => today(),
+                    'description' => "Pedido #{$orderNumber} - Bs. {$subtotal}",
+                ]);
             }
 
             DB::commit();

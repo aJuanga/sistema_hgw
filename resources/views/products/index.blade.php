@@ -84,24 +84,28 @@
             @endif
         </form>
 
-        <a
-            href="{{ route('products.create') }}"
-            class="inline-flex items-center justify-center rounded-xl border border-transparent bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-xl shadow-slate-900/30 transition hover:bg-slate-800"
-        >
-            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Nuevo producto
-        </a>
+        @if(Auth::user()->isJefa())
+            <a
+                href="{{ route('products.create') }}"
+                class="inline-flex items-center justify-center rounded-xl border border-transparent bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-xl shadow-slate-900/30 transition hover:bg-slate-800"
+            >
+                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Nuevo producto
+            </a>
+        @endif
     </section>
 
     @if($products->isEmpty())
         <div class="rounded-3xl border border-dashed border-slate-200 bg-white p-10 text-center shadow-sm">
             <h3 class="text-lg font-semibold text-slate-700">Aún no tienes productos cargados</h3>
             <p class="mt-2 text-sm text-slate-500">Empieza creando tus bebidas estrella para que tu catálogo cobre vida.</p>
-            <a href="{{ route('products.create') }}" class="mt-5 inline-flex items-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-600">
-                Crear el primero
-            </a>
+            @if(Auth::user()->isJefa())
+                <a href="{{ route('products.create') }}" class="mt-5 inline-flex items-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-600">
+                    Crear el primero
+                </a>
+            @endif
         </div>
     @else
         <div class="grid gap-6 lg:grid-cols-3 md:grid-cols-2">
@@ -166,20 +170,22 @@
 
                         <div class="flex items-center justify-between gap-2">
                             <a href="{{ route('products.show', $product) }}"
-                               class="flex-1 inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-700">
+                               class="{{ Auth::user()->isJefa() ? 'flex-1' : 'w-full' }} inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-700">
                                 Ver ficha
                             </a>
-                            <a href="{{ route('products.edit', $product) }}"
-                               class="flex-1 inline-flex items-center justify-center rounded-2xl border border-transparent bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600">
-                                Editar
-                            </a>
-                            <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('¿Eliminar este producto?')" class="flex">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="inline-flex items-center justify-center rounded-2xl border border-transparent bg-rose-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600">
-                                    Borrar
-                                </button>
-                            </form>
+                            @if(Auth::user()->isJefa())
+                                <a href="{{ route('products.edit', $product) }}"
+                                   class="flex-1 inline-flex items-center justify-center rounded-2xl border border-transparent bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600">
+                                    Editar
+                                </a>
+                                <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('¿Eliminar este producto?')" class="flex">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center justify-center rounded-2xl border border-transparent bg-rose-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600">
+                                        Borrar
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 </article>

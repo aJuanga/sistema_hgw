@@ -16,6 +16,7 @@ class ClientPortalController extends Controller
     {
         $user = Auth::user();
         $search = $request->input('search');
+        $categoryId = $request->input('category');
 
         // Obtener estadísticas del usuario
         $stats = $this->getUserStats($user);
@@ -31,6 +32,9 @@ class ClientPortalController extends Controller
                             $categoryQuery->where('name', 'like', "%{$search}%");
                         });
                 });
+            })
+            ->when($categoryId, function ($query, $categoryId) {
+                $query->where('category_id', $categoryId);
             })
             ->latest()
             ->paginate(12);
@@ -55,6 +59,7 @@ class ClientPortalController extends Controller
         return view('client.dashboard', compact(
             'products',
             'search',
+            'categoryId',
             'stats',
             'featuredProducts',
             'categories',

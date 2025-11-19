@@ -9,17 +9,13 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ClientPortalController;
 use App\Http\Controllers\ClientOrderController;
+use App\Http\Controllers\ClientProfileController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-
-Route::get('/test-auth', function () {
-    Auth::login(\App\Models\User::where('email', 'admin@admin.com')->first());
-    return redirect('/dashboard');
-});
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    return view('client.about');
+})->name('home');
 
 Route::get('/dashboard', function () {
     try {
@@ -79,6 +75,7 @@ Route::middleware('auth')->group(function () {
 
     // Rutas del Cliente (accesibles para todos los usuarios autenticados)
     Route::get('/client/dashboard', [ClientPortalController::class, 'index'])->name('client.dashboard');
+    Route::get('/client/profile', [ClientProfileController::class, 'show'])->name('client.profile');
     Route::get('/client/cart', [ClientOrderController::class, 'cart'])->name('client.cart');
     Route::post('/client/cart/add', [ClientOrderController::class, 'addToCart'])->name('client.cart.add');
     Route::post('/client/cart/update', [ClientOrderController::class, 'updateCart'])->name('client.cart.update');
@@ -90,17 +87,70 @@ Route::middleware('auth')->group(function () {
     Route::post('/client/ratings', [ClientOrderController::class, 'storeRating'])->name('client.ratings.store');
 });
 
-// Rutas de Administración (solo para jefa, administrador y empleado)
-Route::middleware(['auth', 'role:jefa,administrador,empleado'])->group(function () {
-    // CRUD Resources - Productos
-    Route::resource('categories', CategoryController::class);
-    Route::resource('products', ProductController::class);
+// ========================================
+// RUTAS ESPECÍFICAS POR ROL
+// ========================================
+
+// Rutas exclusivas de JEFA (acceso completo)
+Route::middleware(['auth', 'role:jefa'])->group(function () {
+    // Solo Jefa puede crear/editar/eliminar Productos
+    Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('products', [ProductController::class, 'store'])->name('products.store');
+    Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
+    Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+    // Solo Jefa puede crear/editar/eliminar Categorías
+    Route::get('categories/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+    // Gestión completa de Enfermedades y Propiedades Saludables
     Route::resource('diseases', DiseaseController::class);
     Route::resource('health-properties', HealthPropertyController::class);
 
-    // CRUD Resources - Inventario y Pedidos
-    Route::resource('inventory', InventoryController::class);
+    // Rutas de Reportes (solo accesibles para Jefa)
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
+    Route::get('reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+    Route::get('reports/employees', [ReportController::class, 'employees'])->name('reports.employees');
+    Route::get('reports/financial', [ReportController::class, 'financial'])->name('reports.financial');
+
+    // Rutas para PDFs de Reportes
+    Route::get('reports/inventory/pdf', [ReportController::class, 'inventoryPdf'])->name('reports.inventory.pdf');
+    Route::get('reports/sales/pdf', [ReportController::class, 'salesPdf'])->name('reports.sales.pdf');
+    Route::get('reports/employees/pdf', [ReportController::class, 'employeesPdf'])->name('reports.employees.pdf');
+    Route::get('reports/financial/pdf', [ReportController::class, 'financialPdf'])->name('reports.financial.pdf');
+});
+
+// Rutas de JEFA y ADMINISTRADOR (sin acceso de Empleado)
+Route::middleware(['auth', 'role:jefa,administrador'])->group(function () {
+    // Gestión de Inventario (solo Jefa y Administrador)
+    Route::resource('inventory', InventoryController::class)->except(['create', 'store']);
+
+    // Acciones de stock
+    Route::post('inventory/{inventory}/add-stock', [InventoryController::class, 'addStock'])->name('inventory.add-stock');
+    Route::post('inventory/{inventory}/subtract-stock', [InventoryController::class, 'subtractStock'])->name('inventory.subtract-stock');
+    Route::post('inventory/{inventory}/restock', [InventoryController::class, 'restockToRecommended'])->name('inventory.restock');
+});
+
+// Rutas de JEFA, ADMINISTRADOR y EMPLEADO
+Route::middleware(['auth', 'role:jefa,administrador,empleado'])->group(function () {
+    // Ver listados (todos pueden ver)
+    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
+    Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
+
+    // Gestión de Pedidos (todos pueden gestionar pedidos)
     Route::resource('orders', OrderController::class);
+});
+
+// Rutas específicas de EMPLEADO
+Route::middleware(['auth', 'role:empleado'])->group(function () {
+    Route::get('/employee/dashboard', [\App\Http\Controllers\EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
 });
 
 require __DIR__.'/auth.php';

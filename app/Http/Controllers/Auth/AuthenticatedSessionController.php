@@ -29,6 +29,21 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Redirigir según el rol del usuario
+        $user = Auth::user();
+
+        if ($user->isCliente()) {
+            // Clientes van a la página "Acerca de HGW"
+            return redirect()->intended(route('client.about'));
+        } elseif ($user->isEmpleado()) {
+            // Empleados van a su dashboard específico
+            return redirect()->intended(route('employee.dashboard'));
+        } elseif ($user->hasAnyRole(['jefa', 'administrador'])) {
+            // Jefa y Administrador van al dashboard general
+            return redirect()->intended(route('dashboard'));
+        }
+
+        // Fallback al home por defecto
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 

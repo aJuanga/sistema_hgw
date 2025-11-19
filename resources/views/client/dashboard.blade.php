@@ -122,6 +122,14 @@
                         <span class="hidden sm:inline">Pedidos</span>
                     </a>
 
+                    <a href="{{ route('client.profile') }}"
+                       class="inline-flex items-center space-x-2 rounded-xl border border-slate-700/50 bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-200 backdrop-blur transition hover:bg-slate-700/50 hover:border-emerald-500/50">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <span class="hidden sm:inline">Perfil</span>
+                    </a>
+
                     <form method="POST" action="{{ route('logout') }}" class="inline">
                         @csrf
                         <button type="submit"
@@ -287,12 +295,17 @@
                     @if($categories->count() > 0)
                     <div class="mt-6 flex flex-wrap gap-2">
                         <span class="text-sm text-slate-400 font-medium mr-2">Categorías:</span>
+                        <a href="{{ route('client.dashboard') }}"
+                           class="inline-flex items-center space-x-1.5 rounded-full border {{ !$categoryId ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300' : 'border-slate-700 bg-slate-800/50 text-slate-300' }} px-4 py-1.5 text-xs font-medium transition hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:text-emerald-300">
+                            <span>Todos</span>
+                        </a>
                         @foreach($categories as $category)
-                        <button class="inline-flex items-center space-x-1.5 rounded-full border border-slate-700 bg-slate-800/50 px-4 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:text-emerald-300">
+                        <a href="{{ route('client.dashboard', ['category' => $category->id]) }}"
+                           class="inline-flex items-center space-x-1.5 rounded-full border {{ $categoryId == $category->id ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300' : 'border-slate-700 bg-slate-800/50 text-slate-300' }} px-4 py-1.5 text-xs font-medium transition hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:text-emerald-300">
                             <span>{{ $category->name }}</span>
                             <span class="text-slate-500">({{ $category->products_count }})</span>
-                        </button>
-                        @endforeach>
+                        </a>
+                        @endforeach
                     </div>
                     @endif
                 </div>

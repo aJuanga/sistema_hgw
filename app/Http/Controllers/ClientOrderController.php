@@ -11,6 +11,7 @@ use App\Models\LoyaltyPoint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ClientOrderController extends Controller
 {
@@ -129,7 +130,47 @@ class ClientOrderController extends Controller
         $tax = $subtotal * 0.13; // 13% de impuesto
         $total = $subtotal + $tax;
 
-        return view('client.checkout', compact('products', 'subtotal', 'tax', 'total', 'paymentMethods'));
+        // Generar QR para pagos
+        $qrData = $this->generatePaymentQRData($total);
+        $qrCodeSvg = QrCode::size(300)
+            ->margin(2)
+            ->generate($qrData);
+
+        return view('client.checkout', compact('products', 'subtotal', 'tax', 'total', 'paymentMethods', 'qrCodeSvg'));
+    }
+
+    /**
+     * Generate payment QR data for Bolivian banking
+     */
+    private function generatePaymentQRData($amount)
+    {
+        // Datos bancarios estáticos para QR simple
+        // En producción, esto debería venir de configuración
+        $bankData = [
+            'merchant' => 'Healthy Glow Wellness - HGW',
+            'account' => '1234567890',
+            'bank' => 'Banco Nacional de Bolivia',
+            'account_type' => 'Caja de Ahorro',
+            'holder' => 'HGW S.R.L.',
+            'amount' => number_format($amount, 2, '.', ''),
+            'currency' => 'BOB',
+            'timestamp' => now()->toIso8601String(),
+        ];
+
+        // Formato simple para QR (puede ser adaptado según el estándar bancario boliviano)
+        return json_encode($bankData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Generate QR code image
+     */
+    public function generateQR(Request $request)
+    {
+        $amount = $request->input('amount', 0);
+        $qrData = $this->generatePaymentQRData($amount);
+
+        return response(QrCode::size(300)->margin(2)->generate($qrData))
+            ->header('Content-Type', 'image/svg+xml');
     }
 
     public function processCheckout(Request $request)

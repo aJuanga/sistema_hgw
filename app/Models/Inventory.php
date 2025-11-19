@@ -15,6 +15,7 @@ class Inventory extends Model
         'product_id',
         'current_stock',
         'minimum_stock',
+        'maximum_stock',
         'unit_of_measure',
         'cost_per_unit',
         'last_restock_date',
@@ -23,9 +24,16 @@ class Inventory extends Model
     protected $casts = [
         'current_stock' => 'decimal:2',
         'minimum_stock' => 'decimal:2',
+        'maximum_stock' => 'decimal:2',
         'cost_per_unit' => 'decimal:2',
         'last_restock_date' => 'datetime',
     ];
+
+    // Accessor para compatibility con la vista
+    public function getUnitAttribute()
+    {
+        return $this->unit_of_measure;
+    }
 
     // Relaciones
     public function product()

@@ -12,21 +12,60 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
-                        Categorías
-                    </x-nav-link>
-                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                        Productos
-                    </x-nav-link>
-                    <x-nav-link :href="route('diseases.index')" :active="request()->routeIs('diseases.*')">
-                        Enfermedades
-                    </x-nav-link>
-                    <x-nav-link :href="route('health-properties.index')" :active="request()->routeIs('health-properties.*')">
-                        Propiedades Saludables
-                    </x-nav-link>
+                    @if(Auth::user()->hasAnyRole(['jefa', 'administrador']))
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
+                    @endif
+
+                    @if(Auth::user()->isEmpleado())
+                        <x-nav-link :href="route('employee.dashboard')" :active="request()->routeIs('employee.dashboard')">
+                            Mi Dashboard
+                        </x-nav-link>
+                    @endif
+
+                    @if(Auth::user()->hasAnyRole(['jefa', 'administrador', 'empleado']))
+                        <!-- Todos pueden ver Categorías (Admin y Empleado solo lectura) -->
+                        <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
+                            Categorías
+                        </x-nav-link>
+                        <!-- Todos pueden ver Productos (Admin y Empleado solo lectura) -->
+                        <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                            Productos
+                        </x-nav-link>
+                    @endif
+
+                    @if(Auth::user()->isJefa())
+                        <!-- Solo Jefa puede ver Enfermedades -->
+                        <x-nav-link :href="route('diseases.index')" :active="request()->routeIs('diseases.*')">
+                            Enfermedades
+                        </x-nav-link>
+                        <!-- Solo Jefa puede ver Propiedades Saludables -->
+                        <x-nav-link :href="route('health-properties.index')" :active="request()->routeIs('health-properties.*')">
+                            Propiedades Saludables
+                        </x-nav-link>
+                    @endif
+
+                    @if(Auth::user()->hasAnyRole(['jefa', 'administrador']))
+                        <!-- Jefa y Administrador pueden ver Inventario -->
+                        <x-nav-link :href="route('inventory.index')" :active="request()->routeIs('inventory.*')">
+                            Inventario
+                        </x-nav-link>
+                    @endif
+
+                    @if(Auth::user()->hasAnyRole(['jefa', 'administrador', 'empleado']))
+                        <!-- Todos pueden ver Pedidos -->
+                        <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
+                            Pedidos
+                        </x-nav-link>
+                    @endif
+
+                    @if(Auth::user()->isJefa())
+                        <!-- Solo Jefa puede ver Reportes -->
+                        <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                            Reportes
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -79,21 +118,53 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
-                Categorías
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                Productos
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('diseases.index')" :active="request()->routeIs('diseases.*')">
-                Enfermedades
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('health-properties.index')" :active="request()->routeIs('health-properties.*')">
-                Propiedades Saludables
-            </x-responsive-nav-link>
+            @if(Auth::user()->hasAnyRole(['jefa', 'administrador']))
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    {{ __('Dashboard') }}
+                </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->isEmpleado())
+                <x-responsive-nav-link :href="route('employee.dashboard')" :active="request()->routeIs('employee.dashboard')">
+                    Mi Dashboard
+                </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->hasAnyRole(['jefa', 'administrador', 'empleado']))
+                <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
+                    Categorías
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                    Productos
+                </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->isJefa())
+                <x-responsive-nav-link :href="route('diseases.index')" :active="request()->routeIs('diseases.*')">
+                    Enfermedades
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('health-properties.index')" :active="request()->routeIs('health-properties.*')">
+                    Propiedades Saludables
+                </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->hasAnyRole(['jefa', 'administrador']))
+                <x-responsive-nav-link :href="route('inventory.index')" :active="request()->routeIs('inventory.*')">
+                    Inventario
+                </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->hasAnyRole(['jefa', 'administrador', 'empleado']))
+                <x-responsive-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
+                    Pedidos
+                </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->isJefa())
+                <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                    Reportes
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
