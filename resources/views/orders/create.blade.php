@@ -35,7 +35,7 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     required>
                                 <option value="">Seleccionar cliente...</option>
-                                @foreach(\App\Models\User::all() as $user)
+                                @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
                                         {{ $user->name }} - {{ $user->email }}
                                     </option>
@@ -313,7 +313,7 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     required>
                                 <option value="">Seleccionar cliente...</option>
-                                @foreach(\App\Models\User::all() as $user)
+                                @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
                                         {{ $user->name }} - {{ $user->email }}
                                     </option>
@@ -591,7 +591,7 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     required>
                                 <option value="">Seleccionar cliente...</option>
-                                @foreach(\App\Models\User::all() as $user)
+                                @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
                                         {{ $user->name }} - {{ $user->email }}
                                     </option>

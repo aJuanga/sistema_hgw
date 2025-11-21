@@ -12,8 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Add check constraint to prevent negative stock
-        DB::statement('ALTER TABLE inventory ADD CONSTRAINT inventory_current_stock_check CHECK (current_stock >= 0)');
+        $driver = Schema::getConnection()->getDriverName();
+
+        // Add check constraint to prevent negative stock (compatible con múltiples motores)
+        if ($driver === 'mysql') {
+            DB::statement('ALTER TABLE inventory ADD CONSTRAINT inventory_current_stock_check CHECK (current_stock >= 0)');
+        } elseif ($driver === 'pgsql') {
+            DB::statement('ALTER TABLE inventory ADD CONSTRAINT inventory_current_stock_check CHECK (current_stock >= 0)');
+        }
+        // SQLite no soporta ALTER TABLE ADD CONSTRAINT, la validación se hace en el modelo/controlador
     }
 
     /**
@@ -21,7 +28,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Drop the check constraint
-        DB::statement('ALTER TABLE inventory DROP CONSTRAINT IF EXISTS inventory_current_stock_check');
+        $driver = Schema::getConnection()->getDriverName();
+
+        if ($driver === 'mysql') {
+            DB::statement('ALTER TABLE inventory DROP CHECK inventory_current_stock_check');
+        } elseif ($driver === 'pgsql') {
+            DB::statement('ALTER TABLE inventory DROP CONSTRAINT IF EXISTS inventory_current_stock_check');
+        }
     }
 };

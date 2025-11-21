@@ -41,7 +41,9 @@ class OrderController extends Controller
             ->select('products.*', 'inventory.current_stock')
             ->get();
 
-        return view('orders.create', compact('products'));
+        $users = User::where('is_active', true)->orderBy('name')->get();
+
+        return view('orders.create', compact('products', 'users'));
     }
 
     /**

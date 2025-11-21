@@ -15,7 +15,8 @@
       "Bash(git commit:*)",
       "Bash(psql:*)",
       "Bash(findstr:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
