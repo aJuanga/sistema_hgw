@@ -100,14 +100,6 @@
                                 Operaciones
                             </div>
 
-                            <a href="{{ route('inventory.index') }}"
-                               class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('inventory.*') ? 'bg-gray-700 text-white' : '' }}">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9-4 9 4-9 4-9-4zm0 6l9-4 9 4-9 4-9-4zm9 4l9 4-9 4-9-4 9-4z"/>
-                                </svg>
-                                Inventario
-                            </a>
-
                             <a href="{{ route('orders.index') }}"
                                class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white {{ request()->routeIs('orders.*') ? 'bg-gray-700 text-white' : '' }}">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -33,14 +33,17 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
 
         if ($user->isCliente()) {
-            // Clientes van a la página "Acerca de HGW"
-            return redirect()->intended(route('client.about'));
+            // Clientes van al catálogo de productos
+            return redirect()->intended(route('client.dashboard'));
+        } elseif ($user->isJefa()) {
+            // Jefa va a su dashboard ejecutivo
+            return redirect()->intended(route('jefa.dashboard'));
+        } elseif ($user->isAdmin()) {
+            // Administradores van a su dashboard específico
+            return redirect()->intended(route('admin.dashboard'));
         } elseif ($user->isEmpleado()) {
-            // Empleados van a su dashboard específico
-            return redirect()->intended(route('employee.dashboard'));
-        } elseif ($user->hasAnyRole(['jefa', 'administrador'])) {
-            // Jefa y Administrador van al dashboard general
-            return redirect()->intended(route('dashboard'));
+            // Empleados van al panel de pedidos
+            return redirect()->intended(route('orders.index'));
         }
 
         // Fallback al home por defecto

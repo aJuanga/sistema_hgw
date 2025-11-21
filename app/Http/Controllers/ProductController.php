@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\HealthProperty;
+use App\Models\Disease;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -45,7 +48,9 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::all();
-        return view('products.create', compact('categories'));
+        $healthProperties = HealthProperty::all();
+        $diseases = Disease::all();
+        return view('products.create', compact('categories', 'healthProperties', 'diseases'));
     }
 
     public function store(Request $request)
@@ -60,10 +65,14 @@ class ProductController extends Controller
             'is_available' => 'boolean',
             'is_featured' => 'boolean',
             'preparation_time' => 'nullable|integer|min:0',
+            'health_properties' => 'nullable|array',
+            'health_properties.*' => 'exists:health_properties,id',
+            'diseases' => 'nullable|array',
+            'diseases.*' => 'exists:diseases,id',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
-        
+
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('products', 'public');
         }
@@ -71,7 +80,28 @@ class ProductController extends Controller
         $validated['is_available'] = $request->has('is_available');
         $validated['is_featured'] = $request->has('is_featured');
 
-        Product::create($validated);
+        // Crear el producto
+        $product = Product::create($validated);
+
+        // Sincronizar propiedades saludables
+        if ($request->has('health_properties')) {
+            $product->healthProperties()->sync($request->health_properties);
+        }
+
+        // Sincronizar enfermedades contraindicadas
+        if ($request->has('diseases')) {
+            $product->contraindicatedDiseases()->sync($request->diseases);
+        }
+
+        // Crear automáticamente el registro de inventario
+        DB::table('inventory')->insert([
+            'product_id' => $product->id,
+            'current_stock' => 0,
+            'minimum_stock' => 5,
+            'maximum_stock' => 100,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         return redirect()->route('products.index')
             ->with('success', 'Producto creado exitosamente');
@@ -85,8 +115,13 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        // Cargar las relaciones del producto
+        $product->load(['healthProperties', 'contraindicatedDiseases']);
+
         $categories = Category::all();
-        return view('products.edit', compact('product', 'categories'));
+        $healthProperties = HealthProperty::all();
+        $diseases = Disease::all();
+        return view('products.edit', compact('product', 'categories', 'healthProperties', 'diseases'));
     }
 
     public function update(Request $request, Product $product)
@@ -101,6 +136,10 @@ class ProductController extends Controller
             'is_available' => 'boolean',
             'is_featured' => 'boolean',
             'preparation_time' => 'nullable|integer|min:0',
+            'health_properties' => 'nullable|array',
+            'health_properties.*' => 'exists:health_properties,id',
+            'diseases' => 'nullable|array',
+            'diseases.*' => 'exists:diseases,id',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -117,6 +156,22 @@ class ProductController extends Controller
 
         $product->update($validated);
 
+        // Sincronizar propiedades saludables
+        if ($request->has('health_properties')) {
+            $product->healthProperties()->sync($request->health_properties);
+        } else {
+            // Si no se envían propiedades, desvincular todas
+            $product->healthProperties()->sync([]);
+        }
+
+        // Sincronizar enfermedades contraindicadas
+        if ($request->has('diseases')) {
+            $product->contraindicatedDiseases()->sync($request->diseases);
+        } else {
+            // Si no se envían enfermedades, desvincular todas
+            $product->contraindicatedDiseases()->sync([]);
+        }
+
         return redirect()->route('products.index')
             ->with('success', 'Producto actualizado exitosamente');
     }
@@ -126,8 +181,12 @@ class ProductController extends Controller
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }
-        
+
+        // Eliminar el producto (soft delete)
         $product->delete();
+
+        // Eliminar también el registro de inventario asociado
+        DB::table('inventory')->where('product_id', $product->id)->delete();
 
         return redirect()->route('products.index')
             ->with('success', 'Producto eliminado exitosamente');

@@ -17,55 +17,9 @@ Route::get('/', function () {
     return view('client.about');
 })->name('home');
 
+// Redirigir /dashboard a /orders
 Route::get('/dashboard', function () {
-    try {
-        // Estadísticas principales
-        $categoriesCount = \App\Models\Category::count();
-        $productsCount = \App\Models\Product::count();
-        $diseasesCount = \App\Models\Disease::count();
-        $healthPropertiesCount = \App\Models\HealthProperty::count();
-        
-        // Pedidos
-        $ordersCount = \App\Models\Order::count();
-        $pendingOrders = \App\Models\Order::with('user')
-            ->whereIn('status', ['pendiente', 'en_preparacion'])
-            ->latest()
-            ->take(5)
-            ->get();
-        
-        // Inventario bajo
-        $lowStockCount = 0;// \App\Models\Inventory::whereRaw('current_stock <= minimum_stock')->count();
-        
-        // Productos recientes
-        $recentProducts = \App\Models\Product::with('category')
-            ->latest()
-            ->take(5)
-            ->get();
-        
-        return view('dashboard', compact(
-            'categoriesCount',
-            'productsCount',
-            'diseasesCount',
-            'healthPropertiesCount',
-            'ordersCount',
-            'pendingOrders',
-            'lowStockCount',
-            'recentProducts'
-        ));
-    } catch (\Exception $e) {
-        // Si hay error de conexión a la base de datos
-        return view('dashboard', [
-            'error' => 'Error: ' . $e->getMessage(),  // ← LÍNEA CORREGIDA
-            'categoriesCount' => 0,
-            'productsCount' => 0,
-            'diseasesCount' => 0,
-            'healthPropertiesCount' => 0,
-            'ordersCount' => 0,
-            'pendingOrders' => collect([]),
-            'lowStockCount' => 0,
-            'recentProducts' => collect([])
-        ]);
-    }
+    return redirect()->route('orders.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -151,6 +105,20 @@ Route::middleware(['auth', 'role:jefa,administrador,empleado'])->group(function 
 // Rutas específicas de EMPLEADO
 Route::middleware(['auth', 'role:empleado'])->group(function () {
     Route::get('/employee/dashboard', [\App\Http\Controllers\EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
+});
+
+// Rutas específicas de ADMINISTRADOR
+Route::middleware(['auth', 'role:administrador'])->group(function () {
+    Route::get('/admin/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
+});
+
+// Rutas específicas de JEFA
+Route::middleware(['auth', 'role:jefa'])->group(function () {
+    Route::get('/jefa/dashboard', [\App\Http\Controllers\JefaDashboardController::class, 'index'])->name('jefa.dashboard');
+
+    // Gestión completa de Usuarios (solo Jefa)
+    Route::resource('users', \App\Http\Controllers\UserController::class);
+    Route::post('users/{user}/toggle-status', [\App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle-status');
 });
 
 require __DIR__.'/auth.php';

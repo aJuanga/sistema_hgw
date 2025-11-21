@@ -5,24 +5,13 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
+                    <a href="{{ route('orders.index') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    @if(Auth::user()->hasAnyRole(['jefa', 'administrador']))
-                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                            {{ __('Dashboard') }}
-                        </x-nav-link>
-                    @endif
-
-                    @if(Auth::user()->isEmpleado())
-                        <x-nav-link :href="route('employee.dashboard')" :active="request()->routeIs('employee.dashboard')">
-                            Mi Dashboard
-                        </x-nav-link>
-                    @endif
 
                     @if(Auth::user()->hasAnyRole(['jefa', 'administrador', 'empleado']))
                         <!-- Todos pueden ver Categorías (Admin y Empleado solo lectura) -->
@@ -43,13 +32,6 @@
                         <!-- Solo Jefa puede ver Propiedades Saludables -->
                         <x-nav-link :href="route('health-properties.index')" :active="request()->routeIs('health-properties.*')">
                             Propiedades Saludables
-                        </x-nav-link>
-                    @endif
-
-                    @if(Auth::user()->hasAnyRole(['jefa', 'administrador']))
-                        <!-- Jefa y Administrador pueden ver Inventario -->
-                        <x-nav-link :href="route('inventory.index')" :active="request()->routeIs('inventory.*')">
-                            Inventario
                         </x-nav-link>
                     @endif
 
@@ -118,18 +100,6 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            @if(Auth::user()->hasAnyRole(['jefa', 'administrador']))
-                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                    {{ __('Dashboard') }}
-                </x-responsive-nav-link>
-            @endif
-
-            @if(Auth::user()->isEmpleado())
-                <x-responsive-nav-link :href="route('employee.dashboard')" :active="request()->routeIs('employee.dashboard')">
-                    Mi Dashboard
-                </x-responsive-nav-link>
-            @endif
-
             @if(Auth::user()->hasAnyRole(['jefa', 'administrador', 'empleado']))
                 <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                     Categorías
@@ -145,12 +115,6 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('health-properties.index')" :active="request()->routeIs('health-properties.*')">
                     Propiedades Saludables
-                </x-responsive-nav-link>
-            @endif
-
-            @if(Auth::user()->hasAnyRole(['jefa', 'administrador']))
-                <x-responsive-nav-link :href="route('inventory.index')" :active="request()->routeIs('inventory.*')">
-                    Inventario
                 </x-responsive-nav-link>
             @endif
 

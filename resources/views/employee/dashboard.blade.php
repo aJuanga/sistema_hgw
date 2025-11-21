@@ -1,9 +1,9 @@
-<x-app-layout>
+<x-employee-layout>
     <x-slot name="header">
         <div class="space-y-2">
-            <p class="text-sm uppercase tracking-[0.4em] text-emerald-400">Panel de Empleado</p>
-            <h1 class="text-3xl font-semibold text-slate-900">Mi Dashboard</h1>
-            <p class="text-sm text-slate-500">Aquí puedes ver tus pedidos realizados y puntos acumulados.</p>
+            <p class="text-xs uppercase tracking-[0.3em] text-emerald-500 font-semibold">Panel de Empleado</p>
+            <h1 class="text-4xl font-bold text-slate-900">Mi Dashboard</h1>
+            <p class="text-base text-slate-600">Gestiona tus pedidos y monitorea tus puntos acumulados</p>
         </div>
     </x-slot>
 
@@ -13,43 +13,58 @@
         </div>
     @endif
 
+    <!-- Acción Rápida: Crear Pedido -->
+    <div class="mb-8">
+        <a href="{{ route('orders.create') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition transform hover:-translate-y-0.5">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Crear Nuevo Pedido
+        </a>
+    </div>
+
     <!-- Filtros de Fecha -->
     <section class="mb-8">
-        <form method="GET" action="{{ route('employee.dashboard') }}" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-            <div class="grid md:grid-cols-3 gap-4 items-end">
-                <div>
-                    <label for="start_date" class="block text-sm font-medium text-slate-700 mb-2">Fecha Inicio</label>
-                    <input
-                        type="date"
-                        id="start_date"
-                        name="start_date"
-                        value="{{ $startDate }}"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring focus:ring-emerald-100"
-                    >
-                </div>
-                <div>
-                    <label for="end_date" class="block text-sm font-medium text-slate-700 mb-2">Fecha Fin</label>
-                    <input
-                        type="date"
-                        id="end_date"
-                        name="end_date"
-                        value="{{ $endDate }}"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring focus:ring-emerald-100"
-                    >
-                </div>
-                <div>
-                    <button
-                        type="submit"
-                        class="w-full inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-600"
-                    >
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                        </svg>
-                        Filtrar
-                    </button>
-                </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
+                <h3 class="text-lg font-semibold text-slate-900">Filtrar por Período</h3>
             </div>
-        </form>
+            <form method="GET" action="{{ route('employee.dashboard') }}" class="p-6">
+                <div class="grid md:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label for="start_date" class="block text-sm font-medium text-slate-700 mb-2">Fecha Inicio</label>
+                        <input
+                            type="date"
+                            id="start_date"
+                            name="start_date"
+                            value="{{ $startDate }}"
+                            class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
+                        >
+                    </div>
+                    <div>
+                        <label for="end_date" class="block text-sm font-medium text-slate-700 mb-2">Fecha Fin</label>
+                        <input
+                            type="date"
+                            id="end_date"
+                            name="end_date"
+                            value="{{ $endDate }}"
+                            class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
+                        >
+                    </div>
+                    <div>
+                        <button
+                            type="submit"
+                            class="w-full inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-emerald-600 transition"
+                        >
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                            </svg>
+                            Filtrar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </section>
 
     <!-- Tarjetas de Estadísticas -->
@@ -224,4 +239,4 @@
             </div>
         @endif
     </section>
-</x-app-layout>
+</x-employee-layout>

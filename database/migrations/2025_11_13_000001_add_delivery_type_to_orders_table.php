@@ -9,7 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->enum('delivery_type', ['para_llevar', 'consumir_local'])->default('consumir_local')->after('payment_method_id');
+            if (!Schema::hasColumn('orders', 'delivery_type')) {
+                $table->enum('delivery_type', ['para_llevar', 'consumir_local'])->default('consumir_local')->after('payment_method_id');
+            }
         });
     }
 

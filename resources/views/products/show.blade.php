@@ -24,13 +24,13 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Imagen -->
                         <div>
-                            @if($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" 
-                                    alt="{{ $product->name }}" 
+                            @if($product->image && file_exists(storage_path('app/public/'.$product->image)))
+                                <img src="{{ asset('storage/' . $product->image) }}"
+                                    alt="{{ $product->name }}"
                                     class="w-full h-64 object-cover rounded-lg shadow">
                             @else
-                                <div class="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
-                                    <span class="text-gray-400">Sin imagen</span>
+                                <div class="w-full h-64 bg-gradient-to-br from-slate-100 via-emerald-50 to-amber-50 rounded-lg flex items-center justify-center">
+                                    <span class="text-sm font-semibold uppercase text-slate-400 tracking-[0.3em]">HGW</span>
                                 </div>
                             @endif
                         </div>

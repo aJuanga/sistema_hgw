@@ -100,40 +100,41 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($inventories as $inventory)
-                                    @php
-                                        $stockStatus = 'normal';
-                                        $rowBgClass = 'bg-white hover:bg-gray-50';
+                                    @if($inventory->product)
+                                        @php
+                                            $stockStatus = 'normal';
+                                            $rowBgClass = 'bg-white hover:bg-gray-50';
 
-                                        if($inventory->current_stock <= $inventory->minimum_stock) {
-                                            $stockStatus = 'critical';
-                                            $rowBgClass = 'bg-red-50 hover:bg-red-100';
-                                        } elseif($inventory->current_stock <= $inventory->minimum_stock * 1.5) {
-                                            $stockStatus = 'warning';
-                                            $rowBgClass = 'bg-yellow-50 hover:bg-yellow-100';
-                                        } else {
-                                            $rowBgClass = 'bg-green-50 hover:bg-green-100';
-                                        }
-                                    @endphp
+                                            if($inventory->current_stock <= $inventory->minimum_stock) {
+                                                $stockStatus = 'critical';
+                                                $rowBgClass = 'bg-red-50 hover:bg-red-100';
+                                            } elseif($inventory->current_stock <= $inventory->minimum_stock * 1.5) {
+                                                $stockStatus = 'warning';
+                                                $rowBgClass = 'bg-yellow-50 hover:bg-yellow-100';
+                                            } else {
+                                                $rowBgClass = 'bg-green-50 hover:bg-green-100';
+                                            }
+                                        @endphp
 
-                                    <tr class="{{ $rowBgClass }}">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center text-white font-bold">
-                                                    {{ substr($inventory->product->name, 0, 2) }}
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">
-                                                        {{ $inventory->product->name }}
+                                        <tr class="{{ $rowBgClass }}">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center text-white font-bold">
+                                                        {{ substr($inventory->product->name, 0, 2) }}
                                                     </div>
-                                                    <div class="text-sm text-gray-500">
-                                                        Bs {{ number_format($inventory->product->price, 2) }}
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-gray-900">
+                                                            {{ $inventory->product->name }}
+                                                        </div>
+                                                        <div class="text-sm text-gray-500">
+                                                            Bs {{ number_format($inventory->product->price, 2) }}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                {{ $inventory->product->category->name ?? 'Sin categoría' }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                    {{ $inventory->product->category->name ?? 'Sin categoría' }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-center">
@@ -221,6 +222,7 @@
                                             </div>
                                         </td>
                                     </tr>
+                                    @endif
                                 @empty
                                     <tr>
                                         <td colspan="9" class="px-6 py-12 text-center">

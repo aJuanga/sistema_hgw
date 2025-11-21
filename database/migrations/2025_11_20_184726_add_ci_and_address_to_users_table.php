@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('inventory', function (Blueprint $table) {
-            if (!Schema::hasColumn('inventory', 'maximum_stock')) {
-                $table->decimal('maximum_stock', 10, 2)->default(100)->after('minimum_stock');
-            }
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('ci', 20)->nullable()->after('phone'); // Cédula de Identidad
+            $table->text('address')->nullable()->after('ci'); // Zona donde vive
         });
     }
 
@@ -23,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('inventory', function (Blueprint $table) {
-            $table->dropColumn('maximum_stock');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn(['ci', 'address']);
         });
     }
 };

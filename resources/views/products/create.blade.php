@@ -83,9 +83,55 @@
                             <!-- Ingredientes -->
                             <div class="col-span-2">
                                 <label for="ingredients" class="block text-sm font-medium text-gray-700">Ingredientes</label>
-                                <textarea name="ingredients" id="ingredients" rows="3" 
+                                <textarea name="ingredients" id="ingredients" rows="3"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('ingredients') }}</textarea>
                                 @error('ingredients')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Propiedades Saludables -->
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Propiedades Saludables</label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-40 overflow-y-auto p-3 border border-gray-300 rounded-md bg-gray-50">
+                                    @forelse($healthProperties as $property)
+                                        <div class="flex items-center">
+                                            <input type="checkbox" name="health_properties[]" value="{{ $property->id }}"
+                                                id="health_property_{{ $property->id }}"
+                                                {{ in_array($property->id, old('health_properties', [])) ? 'checked' : '' }}
+                                                class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded">
+                                            <label for="health_property_{{ $property->id }}" class="ml-2 text-sm text-gray-700">
+                                                {{ $property->name }}
+                                            </label>
+                                        </div>
+                                    @empty
+                                        <p class="text-sm text-gray-500 col-span-3">No hay propiedades saludables disponibles</p>
+                                    @endforelse
+                                </div>
+                                @error('health_properties')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Enfermedades Contraindicadas -->
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Contraindicado para (Enfermedades)</label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-40 overflow-y-auto p-3 border border-gray-300 rounded-md bg-gray-50">
+                                    @forelse($diseases as $disease)
+                                        <div class="flex items-center">
+                                            <input type="checkbox" name="diseases[]" value="{{ $disease->id }}"
+                                                id="disease_{{ $disease->id }}"
+                                                {{ in_array($disease->id, old('diseases', [])) ? 'checked' : '' }}
+                                                class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                                            <label for="disease_{{ $disease->id }}" class="ml-2 text-sm text-gray-700">
+                                                {{ $disease->name }}
+                                            </label>
+                                        </div>
+                                    @empty
+                                        <p class="text-sm text-gray-500 col-span-3">No hay enfermedades disponibles</p>
+                                    @endforelse
+                                </div>
+                                @error('diseases')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -93,7 +139,7 @@
                             <!-- Checkboxes -->
                             <div class="col-span-2 space-y-2">
                                 <div class="flex items-center">
-                                    <input type="checkbox" name="is_available" id="is_available" value="1" 
+                                    <input type="checkbox" name="is_available" id="is_available" value="1"
                                         {{ old('is_available', true) ? 'checked' : '' }}
                                         class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
                                     <label for="is_available" class="ml-2 block text-sm text-gray-900">
@@ -102,7 +148,7 @@
                                 </div>
 
                                 <div class="flex items-center">
-                                    <input type="checkbox" name="is_featured" id="is_featured" value="1" 
+                                    <input type="checkbox" name="is_featured" id="is_featured" value="1"
                                         {{ old('is_featured') ? 'checked' : '' }}
                                         class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
                                     <label for="is_featured" class="ml-2 block text-sm text-gray-900">
