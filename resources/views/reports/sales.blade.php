@@ -50,7 +50,16 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
-                    <p class="text-4xl font-bold">{{ number_format($stats['total_sales'], 2) }} Bs</p>
+                    <p class="text-4xl font-bold">{{ number_format($stats['total_sales'] ?? 0, 2) }} Bs</p>
+                    <p class="text-sm mt-2 opacity-90">
+                        @if(($stats['sales_growth'] ?? 0) > 0)
+                            <span class="text-green-200">↑ {{ number_format($stats['sales_growth'] ?? 0, 1) }}%</span> vs período anterior
+                        @elseif(($stats['sales_growth'] ?? 0) < 0)
+                            <span class="text-red-200">↓ {{ number_format(abs($stats['sales_growth'] ?? 0), 1) }}%</span> vs período anterior
+                        @else
+                            Sin cambios vs período anterior
+                        @endif
+                    </p>
                 </div>
 
                 <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
@@ -60,7 +69,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                         </svg>
                     </div>
-                    <p class="text-4xl font-bold">{{ $stats['total_orders'] }}</p>
+                    <p class="text-4xl font-bold">{{ $stats['total_orders'] ?? 0 }}</p>
+                    <p class="text-sm mt-2 opacity-90">{{ $stats['items_sold'] ?? 0 }} items vendidos</p>
                 </div>
 
                 <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
@@ -70,17 +80,46 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                         </svg>
                     </div>
-                    <p class="text-4xl font-bold">{{ number_format($stats['average_order_value'], 2) }} Bs</p>
+                    <p class="text-4xl font-bold">{{ number_format($stats['average_order_value'] ?? 0, 2) }} Bs</p>
+                    <p class="text-sm mt-2 opacity-90">Ticket promedio</p>
                 </div>
 
                 <div class="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-semibold uppercase tracking-wide">Pedidos Pendientes</span>
+                        <span class="text-sm font-semibold uppercase tracking-wide">Tasa de Completación</span>
                         <svg class="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
-                    <p class="text-4xl font-bold">{{ $stats['pending_orders'] }}</p>
+                    <p class="text-4xl font-bold">{{ number_format($stats['completion_rate'] ?? 0, 1) }}%</p>
+                    <p class="text-sm mt-2 opacity-90">{{ $stats['cancelled_orders'] ?? 0 }} pedidos cancelados</p>
+                </div>
+            </div>
+
+            <!-- Gráficas de Ventas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Ventas por Día -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Tendencia de Ventas Diarias</h3>
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
+
+                <!-- Ventas por Categoría -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Ventas por Categoría</h3>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+
+                <!-- Top 10 Productos -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Top 10 Productos por Cantidad</h3>
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+
+                <!-- Ingresos por Categoría -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Ingresos por Categoría</h3>
+                    <canvas id="categoryRevenueChart"></canvas>
                 </div>
             </div>
 
@@ -96,6 +135,7 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posición</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad Vendida</th>
@@ -106,23 +146,21 @@
                             @foreach($topProducts as $index => $product)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-8 w-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                            {{ $index + 1 }}
-                                        </div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
-                                        </div>
+                                    <div class="flex-shrink-0 h-8 w-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                        {{ $index + 1 }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ number_format($product->price, 2) }} Bs</div>
+                                    <div class="text-sm font-medium text-gray-900">{{ $product->name ?? 'Sin nombre' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-semibold text-green-600">{{ $product->total_quantity }}</div>
+                                    <div class="text-sm text-gray-900">{{ number_format($product->price ?? 0, 2) }} Bs</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-bold text-gray-900">{{ number_format($product->total_revenue, 2) }} Bs</div>
+                                    <div class="text-sm font-semibold text-green-600">{{ $product->total_quantity ?? 0 }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-bold text-gray-900">{{ number_format($product->total_revenue ?? 0, 2) }} Bs</div>
                                 </td>
                             </tr>
                             @endforeach
@@ -131,11 +169,51 @@
                 </div>
             </div>
 
-            <!-- Ventas por Período -->
+            <!-- Ventas por Categoría -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-6 h-6 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                    </svg>
+                    Ventas por Categoría
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad Vendida</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pedidos</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ingresos Totales</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach($salesByCategory as $category)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">{{ $category->category_name ?? 'Sin categoría' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ $category->total_quantity ?? 0 }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ $category->orders_count ?? 0 }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-bold text-green-600">{{ number_format($category->total_revenue ?? 0, 2) }} Bs</div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Ventas Diarias -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                     <svg class="w-6 h-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                     Ventas Diarias
                 </h3>
@@ -146,6 +224,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pedidos</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ventas Totales</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promedio por Pedido</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -157,10 +236,15 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $sale->total_orders }}</div>
+                                    <div class="text-sm text-gray-900">{{ $sale->total_orders ?? 0 }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-bold text-green-600">{{ number_format($sale->total_sales, 2) }} Bs</div>
+                                    <div class="text-sm font-bold text-green-600">{{ number_format($sale->total_sales ?? 0, 2) }} Bs</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        {{ number_format(($sale->total_orders ?? 0) > 0 ? ($sale->total_sales ?? 0) / $sale->total_orders : 0, 2) }} Bs
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach
@@ -171,4 +255,139 @@
 
         </div>
     </div>
+
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Tendencia de Ventas Diarias
+        const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
+        new Chart(salesTrendCtx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($salesByPeriod->pluck('date')->map(function($d) { return \Carbon\Carbon::parse($d)->format('d/m'); })->toArray()) !!},
+                datasets: [{
+                    label: 'Ventas (Bs)',
+                    data: {!! json_encode($salesByPeriod->pluck('total_sales')->toArray()) !!},
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Ventas: ' + context.parsed.y.toFixed(2) + ' Bs';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Ventas por Categoría (Cantidad)
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {!! json_encode($salesByCategory->pluck('category_name')->toArray()) !!},
+                datasets: [{
+                    data: {!! json_encode($salesByCategory->pluck('total_quantity')->toArray()) !!},
+                    backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Top 10 Productos (Horizontal Bar)
+        const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
+        new Chart(topProductsCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($topProducts->pluck('name')->toArray()) !!},
+                datasets: [{
+                    label: 'Unidades Vendidas',
+                    data: {!! json_encode($topProducts->pluck('total_quantity')->toArray()) !!},
+                    backgroundColor: '#10B981',
+                    borderColor: '#059669',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Ingresos por Categoría
+        const categoryRevenueCtx = document.getElementById('categoryRevenueChart').getContext('2d');
+        new Chart(categoryRevenueCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($salesByCategory->pluck('category_name')->toArray()) !!},
+                datasets: [{
+                    label: 'Ingresos (Bs)',
+                    data: {!! json_encode($salesByCategory->pluck('total_revenue')->toArray()) !!},
+                    backgroundColor: '#3B82F6',
+                    borderColor: '#2563EB',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Ingresos: ' + context.parsed.y.toFixed(2) + ' Bs';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+    @endpush
 </x-app-layout>

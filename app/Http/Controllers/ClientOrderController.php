@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\PaymentMethod;
+use App\Models\Payment;
 use App\Models\Inventory;
 use App\Models\LoyaltyPoint;
 use Illuminate\Http\Request;
@@ -113,14 +114,28 @@ class ClientOrderController extends Controller
 
         $products = [];
         $subtotal = 0;
+        $stockWarnings = [];
 
         foreach ($cart as $productId => $item) {
             $product = Product::with('category')->find($productId);
             if ($product) {
+                // Verificar stock disponible
+                $inventory = Inventory::where('product_id', $productId)->first();
+                $stockDisponible = $inventory ? $inventory->current_stock : null;
+                
+                if ($inventory && $stockDisponible < $item['quantity']) {
+                    $stockWarnings[] = [
+                        'product' => $product->name,
+                        'stock_disponible' => $stockDisponible,
+                        'cantidad_solicitada' => $item['quantity']
+                    ];
+                }
+
                 $products[] = [
                     'product' => $product,
                     'quantity' => $item['quantity'],
-                    'subtotal' => $product->price * $item['quantity']
+                    'subtotal' => $product->price * $item['quantity'],
+                    'stock_disponible' => $stockDisponible
                 ];
                 $subtotal += $product->price * $item['quantity'];
             }
@@ -136,7 +151,7 @@ class ClientOrderController extends Controller
             ->margin(2)
             ->generate($qrData);
 
-        return view('client.checkout', compact('products', 'subtotal', 'tax', 'total', 'paymentMethods', 'qrCodeSvg'));
+        return view('client.checkout', compact('products', 'subtotal', 'tax', 'total', 'paymentMethods', 'qrCodeSvg', 'stockWarnings'));
     }
 
     /**
@@ -175,11 +190,23 @@ class ClientOrderController extends Controller
 
     public function processCheckout(Request $request)
     {
-        $request->validate([
-            'payment_method_id' => 'required|exists:payment_methods,id',
-            'delivery_type' => 'required|in:para_llevar,consumir_local',
-            'notes' => 'nullable|string|max:500'
-        ]);
+        try {
+            $request->validate([
+                'payment_method_id' => 'required|exists:payment_methods,id',
+                'delivery_type' => 'required|in:para_llevar,consumir_local',
+                'payment_status' => 'required|in:pendiente,pagado',
+                'notes' => 'nullable|string|max:500'
+            ], [
+                'payment_method_id.required' => 'Debes seleccionar un método de pago',
+                'payment_method_id.exists' => 'El método de pago seleccionado no es válido',
+                'delivery_type.required' => 'Debes seleccionar un tipo de pedido',
+                'delivery_type.in' => 'El tipo de pedido seleccionado no es válido',
+                'payment_status.required' => 'Debes seleccionar el estado del pago',
+                'payment_status.in' => 'El estado del pago seleccionado no es válido',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        }
 
         $cart = session()->get('cart', []);
 
@@ -206,11 +233,9 @@ class ClientOrderController extends Controller
                     throw new \Exception("El producto '{$product->name}' no está disponible");
                 }
 
-                // Verificar inventario
-                $inventory = Inventory::where('product_id', $productId)->first();
-                if ($inventory && $inventory->current_stock < $item['quantity']) {
-                    throw new \Exception("No hay suficiente stock para '{$product->name}'");
-                }
+                // Verificar inventario (solo registrar advertencia, no bloquear el pedido)
+                // El pedido se puede crear aunque haya stock insuficiente
+                // La advertencia ya se muestra en el checkout antes de confirmar
 
                 $item_total = $product->price * $item['quantity'];
                 $subtotal += $item_total;
@@ -248,6 +273,16 @@ class ClientOrderController extends Controller
                 'status' => 'pendiente',
                 'estimated_time' => $total_preparation_time,
                 'notes' => $request->notes,
+            ]);
+
+            // Crear registro de pago
+            $paymentStatus = $request->payment_status === 'pagado' ? 'completado' : 'pendiente';
+            Payment::create([
+                'order_id' => $order->id,
+                'payment_method_id' => $request->payment_method_id,
+                'amount' => $total,
+                'status' => $paymentStatus,
+                'paid_at' => $request->payment_status === 'pagado' ? now() : null,
             ]);
 
             // Otorgar puntos de fidelización (1 punto por cada 10 Bs)
@@ -297,10 +332,16 @@ class ClientOrderController extends Controller
                     'notes' => $notes,
                 ]);
 
-                // Actualizar inventario
+                // Actualizar inventario (solo si existe registro de inventario)
                 $inventory = Inventory::where('product_id', $item['product_id'])->first();
                 if ($inventory) {
-                    $inventory->decrement('current_stock', $item['quantity']);
+                    // Descontar stock, permitiendo que quede en 0 si es necesario
+                    // Esto permite que el pedido se procese incluso con stock insuficiente
+                    $stockActual = $inventory->current_stock;
+                    $cantidadADescontar = $item['quantity'];
+                    $nuevoStock = max(0, $stockActual - $cantidadADescontar);
+                    
+                    $inventory->update(['current_stock' => $nuevoStock]);
                 }
             }
 

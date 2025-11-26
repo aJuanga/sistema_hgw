@@ -653,29 +653,76 @@
 
                         <!-- Método de Pago -->
                         <div class="mb-6">
-                            <label for="payment_method" class="block text-sm font-medium text-gray-700 mb-2">
-                                Método de Pago
+                            <label for="employee_payment_method" class="block text-sm font-medium text-gray-700 mb-2">
+                                Método de Pago <span class="text-red-500">*</span>
                             </label>
                             <select name="payment_method"
-                                    id="payment_method"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    id="employee_payment_method"
+                                    onchange="handleEmployeePaymentMethodChange()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required>
+                                <option value="">Seleccionar método...</option>
                                 <option value="efectivo">💵 Efectivo</option>
+                                <option value="qr">📱 QR (Pago Digital)</option>
                                 <option value="tarjeta">💳 Tarjeta</option>
-                                <option value="transferencia">🏦 Transferencia</option>
                             </select>
+                        </div>
+
+                        <!-- QR Payment Section -->
+                        <div id="employee_qrPaymentSection" class="mb-6 hidden">
+                            <div class="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-xl p-6">
+                                <div class="text-center mb-4">
+                                    <h3 class="text-lg font-bold text-gray-800 mb-2">📱 Escanea el código QR para pagar</h3>
+                                    <p class="text-sm text-gray-600">Usa tu aplicación bancaria para realizar el pago</p>
+                                </div>
+
+                                <div class="flex justify-center mb-4">
+                                    <div class="bg-white p-4 rounded-lg shadow-lg">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=HGW_PAYMENT_QR_CODE"
+                                             alt="Código QR de Pago"
+                                             class="w-48 h-48">
+                                    </div>
+                                </div>
+
+                                <div class="text-center text-sm text-gray-700 mb-4 bg-white p-3 rounded-lg">
+                                    <p class="font-semibold text-purple-700">Cuenta: HGW S.R.L.</p>
+                                    <p>Banco: Banco Nacional</p>
+                                    <p>Número: 1234567890</p>
+                                </div>
+
+                                <div class="flex items-center justify-center space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <span class="text-sm text-yellow-800 font-medium">Una vez realizado el pago, marca como "Pago Procesado" abajo</span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Estado de Pago -->
                         <div class="mb-6">
-                            <label for="payment_status" class="block text-sm font-medium text-gray-700 mb-2">
-                                Estado de Pago
+                            <label class="block text-sm font-medium text-gray-700 mb-3">
+                                Procesar Pago <span class="text-red-500">*</span>
                             </label>
-                            <select name="payment_status"
-                                    id="payment_status"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="pendiente">⏳ Pendiente</option>
-                                <option value="pagado">✅ Pagado</option>
-                            </select>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button type="button"
+                                        onclick="setEmployeePaymentStatus('pendiente')"
+                                        id="employee_btn_pendiente"
+                                        class="employee-payment-status-btn p-4 border-2 rounded-lg text-center transition hover:shadow-lg border-orange-300 bg-orange-50">
+                                    <div class="text-3xl mb-2">⏳</div>
+                                    <div class="font-semibold text-gray-700">Pendiente</div>
+                                    <div class="text-xs text-gray-500">Pagar después</div>
+                                </button>
+                                <button type="button"
+                                        onclick="setEmployeePaymentStatus('pagado')"
+                                        id="employee_btn_pagado"
+                                        class="employee-payment-status-btn p-4 border-2 rounded-lg text-center transition hover:shadow-lg border-gray-300">
+                                    <div class="text-3xl mb-2">✅</div>
+                                    <div class="font-semibold text-gray-700">Pago Procesado</div>
+                                    <div class="text-xs text-gray-500">Confirmar pago</div>
+                                </button>
+                            </div>
+                            <input type="hidden" name="payment_status" id="employee_payment_status" value="pendiente" required>
                         </div>
 
                         <!-- Dirección y Teléfono -->
@@ -745,7 +792,7 @@
     @push('scripts')
     <script>
         const products = @json($products);
-        let productRowIndex = 1; // Empezamos en 1 porque ya existe la fila 0
+        let productRowIndex = 1;
 
         function addProductRow() {
             const container = document.getElementById('productsContainer');
@@ -819,6 +866,41 @@
             document.getElementById('totalDisplay').textContent = `Bs ${total.toFixed(2)}`;
         }
 
+        // Manejo del método de pago para empleados
+        function handleEmployeePaymentMethodChange() {
+            const paymentMethod = document.getElementById('employee_payment_method').value;
+            const qrSection = document.getElementById('employee_qrPaymentSection');
+
+            if (paymentMethod === 'qr') {
+                qrSection.classList.remove('hidden');
+            } else {
+                qrSection.classList.add('hidden');
+            }
+        }
+
+        // Manejo del estado de pago para empleados
+        function setEmployeePaymentStatus(status) {
+            document.getElementById('employee_payment_status').value = status;
+
+            // Actualizar estilos de botones
+            const btnPendiente = document.getElementById('employee_btn_pendiente');
+            const btnPagado = document.getElementById('employee_btn_pagado');
+
+            btnPendiente.classList.remove('border-orange-500', 'bg-orange-100', 'ring-2', 'ring-orange-300');
+            btnPagado.classList.remove('border-green-500', 'bg-green-100', 'ring-2', 'ring-green-300');
+
+            btnPendiente.classList.add('border-gray-300');
+            btnPagado.classList.add('border-gray-300');
+
+            if (status === 'pendiente') {
+                btnPendiente.classList.remove('border-gray-300');
+                btnPendiente.classList.add('border-orange-500', 'bg-orange-100', 'ring-2', 'ring-orange-300');
+            } else {
+                btnPagado.classList.remove('border-gray-300');
+                btnPagado.classList.add('border-green-500', 'bg-green-100', 'ring-2', 'ring-green-300');
+            }
+        }
+
         // Validar antes de enviar
         document.getElementById('orderForm').addEventListener('submit', function(e) {
             const rows = document.querySelectorAll('#productsContainer > div');
@@ -828,6 +910,9 @@
                 return false;
             }
         });
+
+        // Inicializar el estado de pago
+        setEmployeePaymentStatus('pendiente');
     </script>
     @endpush
 </x-app-layout>

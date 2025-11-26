@@ -7,10 +7,14 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Role;
+use App\Models\HealthProfile;
 use App\Models\EmployeePoint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
@@ -19,6 +23,19 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
+        $user = Auth::user();
+
+        // Si no está autenticado, mostrar página informativa de la cafetería
+        if (!$user) {
+            return view('orders.public-info');
+        }
+
+        // Si es CLIENTE, mostrar página informativa de HGW
+        if ($user->isCliente()) {
+            return view('orders.public-info');
+        }
+
+        // Si es STAFF (jefa, admin, empleado), mostrar lista de pedidos
         $query = Order::with(['user', 'orderItems.product'])
             ->orderBy('created_at', 'desc');
 
@@ -41,9 +58,18 @@ class OrderController extends Controller
             ->select('products.*', 'inventory.current_stock')
             ->get();
 
-        $users = User::where('is_active', true)->orderBy('name')->get();
+        // Cargar enfermedades y alergias para el formulario de nuevo cliente
+        $diseases = \App\Models\Disease::where('is_active', true)->orderBy('name')->get();
+        $allergies = \App\Models\Allergy::where('is_active', true)->orderBy('name')->get();
 
-        return view('orders.create', compact('products', 'users'));
+        // Si no está autenticado, mostrar vista pública
+        if (!Auth::check()) {
+            return view('orders.public-create', compact('products', 'diseases', 'allergies'));
+        }
+
+        // Si está autenticado, mostrar vista con roles
+        $users = User::where('is_active', true)->orderBy('name')->get();
+        return view('orders.create', compact('products', 'users', 'diseases', 'allergies'));
     }
 
     /**
@@ -51,17 +77,91 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'notes' => 'nullable|string',
-        ]);
+        // Si se está creando un nuevo cliente
+        if ($request->has('new_client') && $request->new_client == '1') {
+            $validated = $request->validate([
+                'client_name' => 'required|string|max:255',
+                'client_email' => 'required|email|unique:users,email',
+                'client_phone' => 'required|string|max:20',
+                'client_ci' => 'nullable|string|max:20',
+                'client_address' => 'required|string|max:500',
+                'client_diseases' => 'nullable|array',
+                'client_diseases.*' => 'exists:diseases,id',
+                'client_allergies' => 'nullable|array',
+                'client_allergies.*' => 'exists:allergies,id',
+                'notes' => 'nullable|string',
+            ], [
+                'client_name.required' => 'El nombre del cliente es obligatorio',
+                'client_email.required' => 'El correo electrónico del cliente es obligatorio',
+                'client_email.email' => 'El correo electrónico debe ser válido',
+                'client_email.unique' => 'Este correo electrónico ya está registrado',
+                'client_phone.required' => 'El teléfono del cliente es obligatorio',
+                'client_address.required' => 'La dirección del cliente es obligatoria',
+            ]);
+        } else {
+            $validated = $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'items' => 'required|array|min:1',
+                'items.*.product_id' => 'required|exists:products,id',
+                'items.*.quantity' => 'required|integer|min:1',
+                'notes' => 'nullable|string',
+            ]);
+        }
 
         DB::beginTransaction();
 
         try {
+            // Crear nuevo cliente si es necesario
+            if ($request->has('new_client') && $request->new_client == '1') {
+                $user = User::create([
+                    'name' => $validated['client_name'],
+                    'email' => $validated['client_email'],
+                    'password' => Hash::make(Str::random(16)),
+                    'phone' => $validated['client_phone'],
+                    'ci' => $validated['client_ci'] ?? null,
+                    'address' => $validated['client_address'],
+                    'is_active' => true,
+                ]);
+
+                // Asignar rol de cliente
+                $clientRole = Role::where('slug', 'cliente')->first();
+                if ($clientRole) {
+                    $user->roles()->attach($clientRole->id);
+                }
+
+                // Crear perfil de salud si hay enfermedades o alergias
+                if (!empty($validated['client_diseases']) || !empty($validated['client_allergies'])) {
+                    $healthProfile = HealthProfile::create([
+                        'user_id' => $user->id,
+                        'notes' => $validated['notes'] ?? null,
+                    ]);
+
+                    if (!empty($validated['client_diseases'])) {
+                        $healthProfile->diseases()->attach($validated['client_diseases']);
+                    }
+
+                    if (!empty($validated['client_allergies'])) {
+                        $healthProfile->allergies()->attach($validated['client_allergies']);
+                    }
+                }
+
+                $userId = $user->id;
+
+                // Si solo es registro de cliente (sin pedido)
+                DB::commit();
+                return redirect()->route('home')
+                    ->with('success', '¡Registro exitoso! Tu cuenta ha sido creada. Pronto te contactaremos.');
+            } else {
+                $userId = $validated['user_id'];
+            }
+
+            // Verificar si hay items en el pedido
+            if (!isset($validated['items']) || empty($validated['items'])) {
+                DB::commit();
+                return redirect()->route('orders.index')
+                    ->with('error', 'Debes agregar al menos un producto al pedido.');
+            }
+
             // Generate unique order number
             $date = now()->format('Ymd');
             $lastOrder = Order::whereDate('created_at', today())
@@ -80,7 +180,7 @@ class OrderController extends Controller
 
             // Create order
             $order = Order::create([
-                'user_id' => $validated['user_id'],
+                'user_id' => $userId,
                 'order_number' => $orderNumber,
                 'status' => 'pendiente',
                 'subtotal' => $subtotal,

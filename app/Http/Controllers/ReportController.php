@@ -36,9 +36,9 @@ class ReportController extends Controller
             ->leftJoin('inventory', 'products.id', '=', 'inventory.product_id')
             ->select(
                 'products.*',
-                'inventory.current_stock',
-                'inventory.minimum_stock',
-                'inventory.maximum_stock'
+                DB::raw('COALESCE(inventory.current_stock, 0) as current_stock'),
+                DB::raw('COALESCE(inventory.minimum_stock, 0) as minimum_stock'),
+                DB::raw('COALESCE(inventory.maximum_stock, 100) as maximum_stock')
             )
             ->get();
 
@@ -52,45 +52,58 @@ class ReportController extends Controller
 
         // Alertas de productos a reponer
         $lowStockProducts = $products->filter(function ($product) {
-            return $product->current_stock <= $product->minimum_stock;
+            $currentStock = $product->current_stock ?? 0;
+            $minimumStock = $product->minimum_stock ?? 0;
+            return $currentStock <= $minimumStock && $minimumStock > 0;
         });
 
         // Productos con alto stock (más del 80% del máximo)
         $highStockProducts = $products->filter(function ($product) {
-            return $product->current_stock >= ($product->maximum_stock * 0.8);
+            $currentStock = $product->current_stock ?? 0;
+            $maximumStock = $product->maximum_stock ?? 100;
+            return $currentStock >= ($maximumStock * 0.8);
         });
 
         // Productos con stock medio
         $mediumStockProducts = $products->filter(function ($product) {
-            return $product->current_stock > $product->minimum_stock
-                && $product->current_stock < ($product->maximum_stock * 0.8);
+            $currentStock = $product->current_stock ?? 0;
+            $minimumStock = $product->minimum_stock ?? 0;
+            $maximumStock = $product->maximum_stock ?? 100;
+            return $currentStock > $minimumStock && $currentStock < ($maximumStock * 0.8);
         });
 
         // Productos por categoría
-        $productsByCategory = $products->groupBy('category.name')->map(function ($items) {
+        $productsByCategory = $products->groupBy(function ($product) {
+            return $product->category ? $product->category->name : 'Sin categoría';
+        })->map(function ($items) {
             return [
                 'count' => $items->count(),
-                'stock' => $items->sum('current_stock'),
+                'stock' => $items->sum(function ($item) {
+                    return $item->current_stock ?? 0;
+                }),
                 'value' => $items->sum(function ($item) {
-                    return $item->current_stock * $item->price;
+                    return ($item->current_stock ?? 0) * ($item->price ?? 0);
                 })
             ];
         });
 
-        // Movimientos de inventario recientes
-        $recentMovements = DB::table('inventory_movements')
-            ->join('products', 'inventory_movements.product_id', '=', 'products.id')
-            ->whereBetween('inventory_movements.created_at', [$startDate, $endDate])
-            ->select(
-                'products.name',
-                'inventory_movements.type',
-                'inventory_movements.quantity',
-                'inventory_movements.reason',
-                'inventory_movements.created_at'
-            )
-            ->orderBy('inventory_movements.created_at', 'desc')
-            ->limit(20)
-            ->get();
+        // Movimientos de inventario recientes (si la tabla existe)
+        $recentMovements = collect([]);
+        if (DB::getSchemaBuilder()->hasTable('inventory_movements')) {
+            $recentMovements = DB::table('inventory_movements')
+                ->join('products', 'inventory_movements.product_id', '=', 'products.id')
+                ->whereBetween('inventory_movements.created_at', [$startDate, $endDate])
+                ->select(
+                    'products.name',
+                    'inventory_movements.type',
+                    'inventory_movements.quantity',
+                    'inventory_movements.reason',
+                    'inventory_movements.created_at'
+                )
+                ->orderBy('inventory_movements.created_at', 'desc')
+                ->limit(20)
+                ->get();
+        }
 
         // Estadísticas generales
         $stats = [
@@ -99,12 +112,12 @@ class ReportController extends Controller
             'medium_stock_count' => $mediumStockProducts->count(),
             'high_stock_count' => $highStockProducts->count(),
             'total_stock_value' => $products->sum(function ($product) {
-                return $product->current_stock * $product->price;
+                return ($product->current_stock ?? 0) * ($product->price ?? 0);
             }),
             'out_of_stock' => $products->filter(function ($product) {
-                return $product->current_stock == 0;
+                return ($product->current_stock ?? 0) == 0;
             })->count(),
-            'average_stock_per_product' => $products->avg('current_stock'),
+            'average_stock_per_product' => $products->count() > 0 ? $products->avg('current_stock') : 0,
             'total_units_in_stock' => $products->sum('current_stock'),
             'categories_count' => $productsByCategory->count(),
         ];
@@ -208,29 +221,33 @@ class ReportController extends Controller
         // Estadísticas generales
         $totalSales = Order::whereBetween('created_at', [$startDate, $endDate])
             ->whereIn('status', ['completado', 'entregado'])
-            ->sum('total');
+            ->sum('total') ?? 0;
+
+        $totalOrders = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->whereIn('status', ['completado', 'entregado'])
+            ->count();
+
+        $averageOrderValue = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->whereIn('status', ['completado', 'entregado'])
+            ->avg('total') ?? 0;
 
         $stats = [
             'total_sales' => $totalSales,
-            'total_orders' => Order::whereBetween('created_at', [$startDate, $endDate])
-                ->whereIn('status', ['completado', 'entregado'])
-                ->count(),
-            'average_order_value' => Order::whereBetween('created_at', [$startDate, $endDate])
-                ->whereIn('status', ['completado', 'entregado'])
-                ->avg('total'),
+            'total_orders' => $totalOrders,
+            'average_order_value' => $averageOrderValue,
             'pending_orders' => Order::whereBetween('created_at', [$startDate, $endDate])
                 ->whereIn('status', ['pendiente', 'en_preparacion'])
                 ->count(),
             'cancelled_orders' => $cancelledOrders,
             'completion_rate' => $totalOrdersAll > 0 ? round((($totalOrdersAll - $cancelledOrders) / $totalOrdersAll) * 100, 2) : 0,
-            'previous_sales' => $previousSales,
+            'previous_sales' => $previousSales ?? 0,
             'previous_orders' => $previousOrders,
             'sales_growth' => $previousSales > 0 ? round((($totalSales - $previousSales) / $previousSales) * 100, 2) : 0,
             'top_payment_method' => $topPaymentMethod->payment_method_id ?? 'N/A',
             'items_sold' => OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->whereBetween('orders.created_at', [$startDate, $endDate])
                 ->whereIn('orders.status', ['completado', 'entregado'])
-                ->sum('order_items.quantity'),
+                ->sum('order_items.quantity') ?? 0,
         ];
 
         return view('reports.sales', compact(
@@ -254,7 +271,7 @@ class ReportController extends Controller
 
         // Empleados con sus estadísticas
         $employees = User::whereHas('roles', function ($query) {
-            $query->where('name', 'empleado');
+            $query->where('name', 'Empleado');
         })
         ->with(['roles'])
         ->get();
@@ -269,7 +286,7 @@ class ReportController extends Controller
             // Puntos generados
             $points = EmployeePoint::where('user_id', $employee->id)
                 ->whereBetween('created_at', [$startDate, $endDate])
-                ->sum('points');
+                ->sum('points') ?? 0;
 
             // Pedidos completados
             $completedOrders = Order::where('user_id', $employee->id)
@@ -279,8 +296,8 @@ class ReportController extends Controller
 
             $employeeStats[] = [
                 'employee' => $employee,
-                'orders_count' => $ordersCount,
-                'completed_orders' => $completedOrders,
+                'orders_count' => $ordersCount ?? 0,
+                'completed_orders' => $completedOrders ?? 0,
                 'points' => $points,
                 'completion_rate' => $ordersCount > 0 ? round(($completedOrders / $ordersCount) * 100, 2) : 0,
             ];
@@ -308,14 +325,14 @@ class ReportController extends Controller
         $totalSalesByEmployees = Order::whereIn('user_id', $employees->pluck('id'))
             ->whereBetween('created_at', [$startDate, $endDate])
             ->whereIn('status', ['completado', 'entregado'])
-            ->sum('total');
+            ->sum('total') ?? 0;
 
         // Estadísticas generales
         $stats = [
-            'total_employees' => count($employeeStats),
-            'total_points' => array_sum(array_column($employeeStats, 'points')),
-            'total_orders' => array_sum(array_column($employeeStats, 'orders_count')),
-            'total_completed_orders' => array_sum(array_column($employeeStats, 'completed_orders')),
+            'total_employees' => count($employeeStats) ?? 0,
+            'total_points' => array_sum(array_column($employeeStats, 'points')) ?? 0,
+            'total_orders' => array_sum(array_column($employeeStats, 'orders_count')) ?? 0,
+            'total_completed_orders' => array_sum(array_column($employeeStats, 'completed_orders')) ?? 0,
             'average_points' => count($employeeStats) > 0 ? array_sum(array_column($employeeStats, 'points')) / count($employeeStats) : 0,
             'average_completion_rate' => count($employeeStats) > 0 ? array_sum(array_column($employeeStats, 'completion_rate')) / count($employeeStats) : 0,
             'total_sales' => $totalSalesByEmployees,
@@ -449,9 +466,9 @@ class ReportController extends Controller
             ->leftJoin('inventory', 'products.id', '=', 'inventory.product_id')
             ->select(
                 'products.*',
-                'inventory.current_stock',
-                'inventory.minimum_stock',
-                'inventory.maximum_stock'
+                DB::raw('COALESCE(inventory.current_stock, 0) as current_stock'),
+                DB::raw('COALESCE(inventory.minimum_stock, 0) as minimum_stock'),
+                DB::raw('COALESCE(inventory.maximum_stock, 100) as maximum_stock')
             )
             ->get();
 
@@ -463,17 +480,19 @@ class ReportController extends Controller
             ->pluck('total_sold', 'product_id');
 
         $lowStockProducts = $products->filter(function ($product) {
-            return $product->current_stock <= $product->minimum_stock;
+            $currentStock = $product->current_stock ?? 0;
+            $minimumStock = $product->minimum_stock ?? 0;
+            return $currentStock <= $minimumStock && $minimumStock > 0;
         });
 
         $stats = [
             'total_products' => $products->count(),
             'low_stock_count' => $lowStockProducts->count(),
             'total_stock_value' => $products->sum(function ($product) {
-                return $product->current_stock * $product->price;
+                return ($product->current_stock ?? 0) * ($product->price ?? 0);
             }),
             'out_of_stock' => $products->filter(function ($product) {
-                return $product->current_stock == 0;
+                return ($product->current_stock ?? 0) == 0;
             })->count(),
         ];
 
@@ -540,7 +559,7 @@ class ReportController extends Controller
         $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
 
         $employees = User::whereHas('roles', function ($query) {
-            $query->where('name', 'empleado');
+            $query->where('name', 'Empleado');
         })
         ->with(['roles'])
         ->get();
@@ -553,7 +572,7 @@ class ReportController extends Controller
 
             $points = EmployeePoint::where('user_id', $employee->id)
                 ->whereBetween('created_at', [$startDate, $endDate])
-                ->sum('points');
+                ->sum('points') ?? 0;
 
             $completedOrders = Order::where('user_id', $employee->id)
                 ->whereBetween('created_at', [$startDate, $endDate])
@@ -562,8 +581,8 @@ class ReportController extends Controller
 
             $employeeStats[] = [
                 'employee' => $employee,
-                'orders_count' => $ordersCount,
-                'completed_orders' => $completedOrders,
+                'orders_count' => $ordersCount ?? 0,
+                'completed_orders' => $completedOrders ?? 0,
                 'points' => $points,
                 'completion_rate' => $ordersCount > 0 ? round(($completedOrders / $ordersCount) * 100, 2) : 0,
             ];
@@ -574,9 +593,9 @@ class ReportController extends Controller
         });
 
         $stats = [
-            'total_employees' => count($employeeStats),
-            'total_points' => array_sum(array_column($employeeStats, 'points')),
-            'total_orders' => array_sum(array_column($employeeStats, 'orders_count')),
+            'total_employees' => count($employeeStats) ?? 0,
+            'total_points' => array_sum(array_column($employeeStats, 'points')) ?? 0,
+            'total_orders' => array_sum(array_column($employeeStats, 'orders_count')) ?? 0,
             'average_points' => count($employeeStats) > 0 ? array_sum(array_column($employeeStats, 'points')) / count($employeeStats) : 0,
         ];
 

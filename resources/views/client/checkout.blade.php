@@ -121,6 +121,59 @@
     </div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        @if($errors->any())
+            <div class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 p-4 animate-fade-in">
+                <div class="flex items-start space-x-3">
+                    <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-bold text-red-400 mb-2">Error al procesar el pedido</h3>
+                        <ul class="list-disc list-inside text-sm text-red-300 space-y-1">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-6 rounded-xl bg-red-500/10 border border-red-500/30 p-4 animate-fade-in">
+                <div class="flex items-start space-x-3">
+                    <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <p class="text-sm text-red-300">{{ session('error') }}</p>
+                </div>
+            </div>
+        @endif
+
+        @if(isset($stockWarnings) && count($stockWarnings) > 0)
+            <div class="mb-6 rounded-xl bg-orange-500/10 border border-orange-500/30 p-4 animate-fade-in">
+                <div class="flex items-start space-x-3">
+                    <svg class="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-bold text-orange-400 mb-2">Advertencia de Stock Insuficiente</h3>
+                        <p class="text-sm text-orange-300 mb-2">Los siguientes productos no tienen suficiente stock disponible:</p>
+                        <ul class="list-disc list-inside text-sm text-orange-300 space-y-1">
+                            @foreach($stockWarnings as $warning)
+                                <li>
+                                    <strong>{{ $warning['product'] }}</strong>: 
+                                    Stock disponible: {{ $warning['stock_disponible'] }}, 
+                                    Cantidad solicitada: {{ $warning['cantidad_solicitada'] }}
+                                </li>
+                            @endforeach
+                        </ul>
+                        <p class="text-xs text-orange-400 mt-2">Por favor, ajusta las cantidades en tu carrito o contacta con nosotros.</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <form action="{{ route('client.checkout.process') }}" method="POST" id="checkoutForm">
             @csrf
             <div class="grid gap-6 lg:gap-8 lg:grid-cols-[1fr,420px]">
@@ -153,6 +206,17 @@
                                             </span>
                                         </p>
                                         <p class="text-xs text-slate-500 mt-1">Cantidad: {{ $item['quantity'] }}</p>
+                                        @if(isset($item['stock_disponible']) && $item['stock_disponible'] !== null)
+                                            @if($item['stock_disponible'] < $item['quantity'])
+                                                <p class="text-xs text-orange-400 mt-1 font-semibold">
+                                                    Stock disponible: {{ $item['stock_disponible'] }} (insuficiente)
+                                                </p>
+                                            @elseif($item['stock_disponible'] < ($item['quantity'] * 2))
+                                                <p class="text-xs text-yellow-400 mt-1">
+                                                    Stock disponible: {{ $item['stock_disponible'] }}
+                                                </p>
+                                            @endif
+                                        @endif
                                     </div>
                                     <div class="text-right">
                                         <p class="text-xs text-slate-500 mb-1">Bs. {{ number_format($item['product']->price, 2) }} × {{ $item['quantity'] }}</p>
@@ -283,16 +347,60 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="rounded-xl bg-blue-500/10 border border-blue-500/30 p-4">
+                        <div class="rounded-xl bg-yellow-500/10 border border-yellow-500/30 p-4 mb-4">
                             <div class="flex items-start space-x-3">
-                                <svg class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                                 </svg>
-                                <p class="text-sm text-blue-300 leading-relaxed">
-                                    Realiza la transferencia y confirma tu pedido. El pago será verificado por nuestro equipo.
+                                <p class="text-sm text-yellow-300 leading-relaxed font-medium">
+                                    Una vez realizado el pago, marca como "Pago Procesado" abajo antes de confirmar tu pedido.
                                 </p>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Payment Status Section -->
+                    <div class="rounded-2xl border border-slate-800/50 bg-slate-900/50 backdrop-blur-xl p-6 shadow-xl animate-fade-in">
+                        <div class="flex items-center space-x-2 mb-6">
+                            <svg class="h-6 w-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <h2 class="text-xl font-bold text-white">Procesar Pago</h2>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-4">Selecciona el estado del pago antes de confirmar tu pedido</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button type="button"
+                                    onclick="setPaymentStatus('pendiente')"
+                                    id="btn_pendiente"
+                                    class="payment-status-btn group relative p-6 rounded-xl border-2 border-orange-500/30 bg-orange-500/10 cursor-pointer hover:bg-orange-500/20 hover:border-orange-500/50 transition-all">
+                                <div class="text-center">
+                                    <div class="flex justify-center mb-3">
+                                        <svg class="w-12 h-12 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="font-bold text-white text-lg mb-1">Pendiente</div>
+                                    <div class="text-xs text-slate-400">Pagaré después</div>
+                                </div>
+                                <div class="absolute inset-0 rounded-xl ring-2 ring-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                            </button>
+                            <button type="button"
+                                    onclick="setPaymentStatus('pagado')"
+                                    id="btn_pagado"
+                                    class="payment-status-btn group relative p-6 rounded-xl border-2 border-slate-700/50 bg-slate-800/30 cursor-pointer hover:bg-slate-800/50 hover:border-slate-600/50 transition-all">
+                                <div class="text-center">
+                                    <div class="flex justify-center mb-3">
+                                        <svg class="w-12 h-12 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="font-bold text-white text-lg mb-1">Pago Procesado</div>
+                                    <div class="text-xs text-slate-400">Ya realicé el pago</div>
+                                </div>
+                                <div class="absolute inset-0 rounded-xl ring-2 ring-green-500/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                            </button>
+                        </div>
+                        <input type="hidden" name="payment_status" id="payment_status" value="pendiente" required>
                     </div>
 
                     <!-- Notas Adicionales -->
@@ -384,14 +492,65 @@
             }
         }
 
-        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-            const paymentMethod = document.querySelector('input[name="payment_method_id"]:checked');
-            if (!paymentMethod) {
-                e.preventDefault();
-                alert('Por favor selecciona un método de pago');
-                return false;
+        function setPaymentStatus(status) {
+            document.getElementById('payment_status').value = status;
+
+            // Actualizar estilos de botones
+            const btnPendiente = document.getElementById('btn_pendiente');
+            const btnPagado = document.getElementById('btn_pagado');
+
+            // Resetear estilos
+            btnPendiente.classList.remove('border-orange-500/50', 'bg-orange-500/20', 'ring-2', 'ring-orange-500/30');
+            btnPagado.classList.remove('border-green-500/50', 'bg-green-500/20', 'ring-2', 'ring-green-500/30');
+
+            btnPendiente.classList.add('border-orange-500/30', 'bg-orange-500/10');
+            btnPagado.classList.add('border-slate-700/50', 'bg-slate-800/30');
+
+            // Aplicar estilos según selección
+            if (status === 'pendiente') {
+                btnPendiente.classList.remove('border-orange-500/30', 'bg-orange-500/10');
+                btnPendiente.classList.add('border-orange-500/50', 'bg-orange-500/20', 'ring-2', 'ring-orange-500/30');
+            } else {
+                btnPagado.classList.remove('border-slate-700/50', 'bg-slate-800/30');
+                btnPagado.classList.add('border-green-500/50', 'bg-green-500/20', 'ring-2', 'ring-green-500/30');
             }
-        });
+        }
+
+        const checkoutForm = document.getElementById('checkoutForm');
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', function(e) {
+                const paymentMethod = document.querySelector('input[name="payment_method_id"]:checked');
+                if (!paymentMethod) {
+                    e.preventDefault();
+                    alert('Por favor selecciona un método de pago');
+                    return false;
+                }
+
+                const paymentStatus = document.getElementById('payment_status');
+                if (!paymentStatus) {
+                    console.error('Campo payment_status no encontrado');
+                    e.preventDefault();
+                    alert('Error: Campo de estado de pago no encontrado');
+                    return false;
+                }
+
+                if (!paymentStatus.value || (paymentStatus.value !== 'pendiente' && paymentStatus.value !== 'pagado')) {
+                    e.preventDefault();
+                    alert('Por favor selecciona el estado del pago (Pendiente o Pago Procesado)');
+                    return false;
+                }
+
+                // Deshabilitar el botón para evitar doble envío
+                const submitButton = this.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<span class="flex items-center justify-center space-x-2"><span>Procesando...</span><svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></span>';
+                }
+            });
+        }
+
+        // Inicializar el estado de pago
+        setPaymentStatus('pendiente');
     </script>
 </body>
 </html>

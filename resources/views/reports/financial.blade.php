@@ -51,6 +51,7 @@
                         </svg>
                     </div>
                     <p class="text-4xl font-bold">{{ number_format($stats['total_revenue'], 2) }} Bs</p>
+                    <p class="text-sm mt-2 opacity-90">{{ $stats['total_orders'] }} pedidos</p>
                 </div>
 
                 <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
@@ -61,6 +62,7 @@
                         </svg>
                     </div>
                     <p class="text-4xl font-bold">{{ number_format($stats['previous_revenue'], 2) }} Bs</p>
+                    <p class="text-sm mt-2 opacity-90">Comparativa</p>
                 </div>
 
                 <div class="bg-gradient-to-br {{ $stats['revenue_growth'] >= 0 ? 'from-green-500 to-emerald-600' : 'from-red-500 to-pink-600' }} rounded-xl shadow-lg p-6 text-white">
@@ -77,6 +79,7 @@
                         @endif
                     </div>
                     <p class="text-4xl font-bold">{{ $stats['revenue_growth'] >= 0 ? '+' : '' }}{{ number_format($stats['revenue_growth'], 2) }}%</p>
+                    <p class="text-sm mt-2 opacity-90">vs período anterior</p>
                 </div>
 
                 <div class="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
@@ -87,10 +90,38 @@
                         </svg>
                     </div>
                     <p class="text-4xl font-bold">{{ number_format($stats['average_daily_revenue'], 2) }} Bs</p>
+                    <p class="text-sm mt-2 opacity-90">{{ number_format($stats['avg_orders_per_day'], 1) }} pedidos/día</p>
                 </div>
             </div>
 
-            <!-- Métodos de Pago -->
+            <!-- Gráficas Financieras -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Tendencia de Ingresos Diarios -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Tendencia de Ingresos Diarios</h3>
+                    <canvas id="revenueTrendChart"></canvas>
+                </div>
+
+                <!-- Ingresos por Método de Pago -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Ingresos por Método de Pago</h3>
+                    <canvas id="paymentMethodsChart"></canvas>
+                </div>
+
+                <!-- Comparativa Período Actual vs Anterior -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Comparativa de Períodos</h3>
+                    <canvas id="periodComparisonChart"></canvas>
+                </div>
+
+                <!-- Ventas por Tipo de Entrega -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Ingresos por Tipo de Entrega</h3>
+                    <canvas id="deliveryTypeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Métodos de Pago Detallado -->
             <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                     <svg class="w-6 h-6 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,39 +129,55 @@
                     </svg>
                     Ingresos por Método de Pago
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    @foreach($paymentMethods as $method)
-                    <div class="bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg p-6 border border-purple-200">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="text-lg font-semibold text-gray-800">
-                                @if($method->payment_method == 'efectivo')
-                                    Efectivo
-                                @elseif($method->payment_method == 'tarjeta')
-                                    Tarjeta
-                                @elseif($method->payment_method == 'qr')
-                                    QR
-                                @else
-                                    {{ ucfirst($method->payment_method) }}
-                                @endif
-                            </h4>
-                            <div class="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
-                                {{ $method->count }}
-                            </div>
-                        </div>
-                        <p class="text-2xl font-bold text-purple-600">{{ number_format($method->total, 2) }} Bs</p>
-                        <p class="text-sm text-gray-600 mt-1">{{ $method->count }} transacciones</p>
-                    </div>
-                    @endforeach
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Método de Pago</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transacciones</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Ingresos</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket Promedio</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach($paymentMethods as $method)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        @if($method->payment_method_id == 1)
+                                            Efectivo
+                                        @elseif($method->payment_method_id == 2)
+                                            Tarjeta
+                                        @elseif($method->payment_method_id == 3)
+                                            QR
+                                        @else
+                                            Método {{ $method->payment_method_id }}
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ $method->count }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-bold text-purple-600">{{ number_format($method->total, 2) }} Bs</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ number_format($method->count > 0 ? $method->total / $method->count : 0, 2) }} Bs</div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- Ingresos Diarios -->
+            <!-- Ingresos Diarios Detallado -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                     <svg class="w-6 h-6 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    Ingresos Diarios
+                    Ingresos Diarios Detallados
                 </h3>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -139,6 +186,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pedidos</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ingresos</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket Promedio</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -155,6 +203,9 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-bold text-purple-600">{{ number_format($revenue->revenue, 2) }} Bs</div>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ number_format($revenue->orders > 0 ? $revenue->revenue / $revenue->orders : 0, 2) }} Bs</div>
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -164,4 +215,157 @@
 
         </div>
     </div>
+
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Tendencia de Ingresos Diarios
+        const revenueTrendCtx = document.getElementById('revenueTrendChart').getContext('2d');
+        new Chart(revenueTrendCtx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($dailyRevenue->pluck('date')->map(function($d) { return \Carbon\Carbon::parse($d)->format('d/m'); })->toArray()) !!},
+                datasets: [{
+                    label: 'Ingresos (Bs)',
+                    data: {!! json_encode($dailyRevenue->pluck('revenue')->toArray()) !!},
+                    borderColor: '#8B5CF6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Ingresos: ' + context.parsed.y.toFixed(2) + ' Bs';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Ingresos por Método de Pago
+        const paymentLabels = {!! json_encode($paymentMethods->map(function($m) {
+            if($m->payment_method_id == 1) return 'Efectivo';
+            if($m->payment_method_id == 2) return 'Tarjeta';
+            if($m->payment_method_id == 3) return 'QR';
+            return 'Método ' . $m->payment_method_id;
+        })->toArray()) !!};
+
+        const paymentCtx = document.getElementById('paymentMethodsChart').getContext('2d');
+        new Chart(paymentCtx, {
+            type: 'doughnut',
+            data: {
+                labels: paymentLabels,
+                datasets: [{
+                    data: {!! json_encode($paymentMethods->pluck('total')->toArray()) !!},
+                    backgroundColor: ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed.toFixed(2) + ' Bs';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Comparativa de Períodos
+        const comparisonCtx = document.getElementById('periodComparisonChart').getContext('2d');
+        new Chart(comparisonCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Período Actual', 'Período Anterior'],
+                datasets: [{
+                    label: 'Ingresos (Bs)',
+                    data: [{{ $stats['total_revenue'] }}, {{ $stats['previous_revenue'] }}],
+                    backgroundColor: ['#8B5CF6', '#3B82F6'],
+                    borderColor: ['#7C3AED', '#2563EB'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Ingresos: ' + context.parsed.y.toFixed(2) + ' Bs';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Ventas por Tipo de Entrega
+        const deliveryCtx = document.getElementById('deliveryTypeChart').getContext('2d');
+        new Chart(deliveryCtx, {
+            type: 'pie',
+            data: {
+                labels: {!! json_encode($salesByDelivery->pluck('delivery_type')->map(function($d) {
+                    if($d == 'domicilio') return 'Domicilio';
+                    if($d == 'tienda') return 'Tienda';
+                    return ucfirst($d);
+                })->toArray()) !!},
+                datasets: [{
+                    data: {!! json_encode($salesByDelivery->pluck('total')->toArray()) !!},
+                    backgroundColor: ['#EC4899', '#8B5CF6', '#F59E0B'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed.toFixed(2) + ' Bs';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    @endpush
 </x-app-layout>

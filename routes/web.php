@@ -17,6 +17,10 @@ Route::get('/', function () {
     return view('client.about');
 })->name('home');
 
+// Rutas públicas para registro de clientes (sin autenticación)
+Route::get('/register-client', [\App\Http\Controllers\PublicOrderController::class, 'showRegisterForm'])->name('public.register');
+Route::post('/register-client', [\App\Http\Controllers\PublicOrderController::class, 'registerClient'])->name('public.register.store');
+
 // Redirigir /dashboard a /orders
 Route::get('/dashboard', function () {
     return redirect()->route('orders.index');
@@ -90,7 +94,12 @@ Route::middleware(['auth', 'role:jefa,administrador'])->group(function () {
     Route::post('inventory/{inventory}/restock', [InventoryController::class, 'restockToRecommended'])->name('inventory.restock');
 });
 
-// Rutas de JEFA, ADMINISTRADOR y EMPLEADO
+// Ruta pública de pedidos (sin autenticación) - para registro de clientes
+Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
+Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
+
+// Rutas de JEFA, ADMINISTRADOR y EMPLEADO (autenticadas)
 Route::middleware(['auth', 'role:jefa,administrador,empleado'])->group(function () {
     // Ver listados (todos pueden ver)
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
@@ -98,8 +107,11 @@ Route::middleware(['auth', 'role:jefa,administrador,empleado'])->group(function 
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
 
-    // Gestión de Pedidos (todos pueden gestionar pedidos)
-    Route::resource('orders', OrderController::class);
+    // Gestión de Pedidos (solo ver, editar, eliminar requieren auth)
+    Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
+    Route::put('orders/{order}', [OrderController::class, 'update'])->name('orders.update');
+    Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
 });
 
 // Rutas específicas de EMPLEADO
