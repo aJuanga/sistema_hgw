@@ -1,3 +1,17 @@
+@if(Auth::user()->isJefa() || Auth::user()->isAdmin())
+<x-jefa-layout>
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <div class="space-y-2">
+                <p class="text-xs uppercase tracking-[0.3em] bg-gradient-to-r from-emerald-600 to-amber-600 bg-clip-text text-transparent font-bold">Detalle del Pedido</p>
+                <h1 class="text-4xl font-bold text-gray-900">Pedido {{ $order->order_number }}</h1>
+            </div>
+            <a href="{{ route('orders.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+                ← Volver a pedidos
+            </a>
+        </div>
+    </x-slot>
+@else
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
@@ -9,6 +23,7 @@
             </a>
         </div>
     </x-slot>
+@endif
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -209,4 +224,9 @@
             </div>
         </div>
     </div>
+
+@if(Auth::user()->isJefa() || Auth::user()->isAdmin())
+</x-jefa-layout>
+@else
 </x-app-layout>
+@endif
